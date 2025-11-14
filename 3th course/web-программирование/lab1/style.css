@@ -1,0 +1,61 @@
+    body {
+        font-family: sans-serif;
+        margin: 20px;
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    .input-group {
+        display: flex;
+        margin-bottom: 10px;
+    }
+
+    .input-group input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .input-group button {
+        padding: 8px 12px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    li {
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    li:last-child {
+        border-bottom: none;
+    }
+
+    li span {
+        flex: 1;
+    }
+
+    li button {
+        background-color: #f44336;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        cursor: pointer;
+    }
+
+    .completed {
+        text-decoration: line-through;
+        color: #888;
+    }
