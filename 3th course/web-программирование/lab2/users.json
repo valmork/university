@@ -3,6 +3,7 @@
         { "id": 2, "name": "Jane Smith", "email": "jane.smith@example.com" },
         { "id": 3, "name": "Peter Jones", "email": "peter.jones@example.com" },
         { "id": 4, "name": "Alice Brown", "email": "alice.brown@example.com" },
-        { "id": 5, "name": "Bob Wilson", "email": "bob.wilson@example.com" }
+        { "id": 5, "name": "Bob Wilson", "email": "bob.wilson@example.com" },
+        { "id": 6, "name": "Антон Королев", "email": "korolyov.anton0208@gmail.com" }
     ]
 
