@@ -1,10 +1,10 @@
-// 2. Получение доступа к элементам DOM
+// Получение доступа к элементам
 const searchInput = document.getElementById('search');
 const userList = document.getElementById('user-list');
 
 let allUsers = []; // Сохраняем всех пользователей для фильтрации
 
-// 3. Реализация AJAX-запроса для загрузки данных
+// Реализация AJAX-запроса для загрузки данных
 function loadUsers() {
     const xhr = new XMLHttpRequest();
     
@@ -28,7 +28,7 @@ function loadUsers() {
     xhr.send();
 }
 
-// 4. Реализация отображения списка пользователей
+// Реализация отображения списка пользователей
 function displayUsers(users) {
     // Очищаем список
     userList.innerHTML = '';
@@ -41,7 +41,7 @@ function displayUsers(users) {
     });
 }
 
-// 5. Реализация фильтрации пользователей
+// Реализация фильтрации пользователей
 function filterUsers() {
     const searchText = searchInput.value.toLowerCase();
     
