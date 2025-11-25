@@ -1,0 +1,35 @@
+[
+    {
+        "zachetka": "220893",
+        "surname": "Королев",
+        "name": "Антон",
+        "patronymic": "Сергеевич",
+        "gender": null,
+        "birth_date": null,
+        "phone": null,
+        "address": null,
+        "group": null
+    },
+    {
+        "zachetka": "220894",
+        "surname": "КК",
+        "name": "ОО",
+        "patronymic": "кк",
+        "gender": null,
+        "birth_date": null,
+        "phone": null,
+        "address": null,
+        "group": null
+    },
+    {
+        "zachetka": "2208",
+        "surname": "кууу",
+        "name": "ллкалк",
+        "patronymic": "аап",
+        "gender": "Женский",
+        "birth_date": "02.02.2022",
+        "phone": "+82828",
+        "address": "аллв",
+        "group": "31ПИ"
+    }
+]

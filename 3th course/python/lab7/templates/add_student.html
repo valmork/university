@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Добавление нового студента</h2>
+
+<form method="POST" class="student-form">
+    <div class="form-group">
+        <label for="full_name">ФИО *:</label>
+        <input type="text" id="full_name" name="full_name" required>
+    </div>
+
+    <div class="form-group">
+        <label for="birth_date">Дата рождения *:</label>
+        <input type="date" id="birth_date" name="birth_date" required>
+    </div>
+
+    <div class="form-group">
+        <label for="group_name">Группа *:</label>
+        <input type="text" id="group_name" name="group_name" placeholder="Например: ИТ-21-1" required>
+    </div>
+
+    <div class="form-group">
+        <label for="phone">Телефон:</label>
+        <input type="tel" id="phone" name="phone" placeholder="+79161234567">
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="student@edu.ru">
+    </div>
+
+    <div class="form-group">
+        <label for="enrollment_year">Год поступления *:</label>
+        <input type="number" id="enrollment_year" name="enrollment_year" 
+               min="2000" max="{{ current_year + 1 }}" value="{{ current_year }}" required>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Добавить студента</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+
+<p class="form-note">* - обязательные поля</p>
+{% endblock %}

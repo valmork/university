@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Удаление студента</h2>
+
+{% if students %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ФИО</th>
+                    <th>Группа</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.full_name }}</td>
+                    <td>{{ student.group_name }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('delete_student', student_id=student.id) }}" 
+                              onsubmit="return confirm('Вы уверены, что хотите удалить студента {{ student.full_name }}?')">
+                            <button type="submit" class="btn btn-danger">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p>Нет студентов для удаления.</p>
+{% endif %}
+
+<div class="actions">
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Вернуться к списку</a>
+</div>
+{% endblock %}
