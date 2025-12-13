@@ -1,0 +1,142 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Safari/605.1.15" version="29.2.7">
+  <diagram name="Страница-1" id="owYc_F9vbX1Uuk3y0sBF">
+    <mxGraphModel dx="1215" dy="580" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-1" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="bubble([1,3,4,2], Res)" vertex="1">
+          <mxGeometry height="80" width="120" x="350" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-2" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="exchange([1,3,4,2], Tmp), bubble(Tmp, Res)" vertex="1">
+          <mxGeometry height="80" width="120" x="350" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-3" edge="1" parent="1" source="tZ_le-zo1e8rLagFvmTs-2" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="tZ_le-zo1e8rLagFvmTs-1" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="260" y="200" as="sourcePoint" />
+            <mxPoint x="310" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-4" connectable="0" parent="tZ_le-zo1e8rLagFvmTs-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="1 правило bubble&amp;nbsp;" vertex="1">
+          <mxGeometry relative="1" x="-0.0571" y="2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-5" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="exchange([3,4,2], L2)" vertex="1">
+          <mxGeometry height="80" width="120" x="350" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-6" edge="1" parent="1" source="tZ_le-zo1e8rLagFvmTs-5" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="tZ_le-zo1e8rLagFvmTs-2" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="240" y="370" as="sourcePoint" />
+            <mxPoint x="290" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-7" connectable="0" parent="tZ_le-zo1e8rLagFvmTs-6" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="2 правило exchange" vertex="1">
+          <mxGeometry relative="1" x="0.08" y="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-8" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="exchange([4,2], L3)" vertex="1">
+          <mxGeometry height="80" width="120" x="350" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-9" edge="1" parent="1" source="tZ_le-zo1e8rLagFvmTs-8" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="tZ_le-zo1e8rLagFvmTs-5" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="290" y="520" as="sourcePoint" />
+            <mxPoint x="340" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-10" connectable="0" parent="tZ_le-zo1e8rLagFvmTs-9" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="2 правило exchange" vertex="1">
+          <mxGeometry relative="1" x="-0.04" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-11" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="bubble([1,3,2,4], Res)" vertex="1">
+          <mxGeometry height="80" width="120" x="350" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-12" edge="1" parent="1" source="tZ_le-zo1e8rLagFvmTs-11" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="tZ_le-zo1e8rLagFvmTs-8" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="330" y="630" as="sourcePoint" />
+            <mxPoint x="380" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-13" connectable="0" parent="tZ_le-zo1e8rLagFvmTs-12" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="! &amp;nbsp;(отсечение альтернатив)" vertex="1">
+          <mxGeometry relative="1" x="0.32" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-14" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="exchange([1,3,2,4], Tmp), bubble(Tmp, Res)" vertex="1">
+          <mxGeometry height="80" width="120" x="350" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-15" edge="1" parent="1" source="tZ_le-zo1e8rLagFvmTs-14" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="tZ_le-zo1e8rLagFvmTs-11" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="250" y="790" as="sourcePoint" />
+            <mxPoint x="300" y="740" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-16" connectable="0" parent="tZ_le-zo1e8rLagFvmTs-15" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="1 правило bubble&amp;nbsp;" vertex="1">
+          <mxGeometry relative="1" x="0.05" y="-3" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-17" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="exchange([3,2,4], L4)" vertex="1">
+          <mxGeometry height="80" width="120" x="350" y="840" as="geometry" />
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-18" edge="1" parent="1" source="tZ_le-zo1e8rLagFvmTs-17" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="tZ_le-zo1e8rLagFvmTs-14" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="330" y="880" as="sourcePoint" />
+            <mxPoint x="380" y="830" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-19" connectable="0" parent="tZ_le-zo1e8rLagFvmTs-18" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="2 правило exchange" vertex="1">
+          <mxGeometry relative="1" x="0.05" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-20" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="bubble([1,2,3,4], Res)" vertex="1">
+          <mxGeometry height="80" width="120" x="350" y="960" as="geometry" />
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-21" edge="1" parent="1" source="tZ_le-zo1e8rLagFvmTs-20" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="tZ_le-zo1e8rLagFvmTs-17" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="220" y="990" as="sourcePoint" />
+            <mxPoint x="270" y="940" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-22" connectable="0" parent="tZ_le-zo1e8rLagFvmTs-21" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="! &amp;nbsp;(отсечение альтернатив)" vertex="1">
+          <mxGeometry relative="1" x="0.25" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-23" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="exchange([1,2,3,4], _)" vertex="1">
+          <mxGeometry height="80" width="120" x="230" y="1050" as="geometry" />
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-24" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="bubble(Src, Src)." vertex="1">
+          <mxGeometry height="80" width="120" x="470" y="1050" as="geometry" />
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-25" edge="1" parent="1" source="tZ_le-zo1e8rLagFvmTs-23" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="tZ_le-zo1e8rLagFvmTs-20" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="260" y="1070" as="sourcePoint" />
+            <mxPoint x="310" y="1020" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-26" connectable="0" parent="tZ_le-zo1e8rLagFvmTs-25" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="1 правило exchange" vertex="1">
+          <mxGeometry relative="1" x="-0.0814" y="1" as="geometry">
+            <mxPoint x="-15" y="-4" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-27" edge="1" parent="1" source="tZ_le-zo1e8rLagFvmTs-20" style="endArrow=none;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="tZ_le-zo1e8rLagFvmTs-24" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="500" y="1020" as="sourcePoint" />
+            <mxPoint x="550" y="970" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-28" connectable="0" parent="tZ_le-zo1e8rLagFvmTs-27" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="2 правило bubble" vertex="1">
+          <mxGeometry relative="1" x="0.0814" y="1" as="geometry">
+            <mxPoint x="15" y="-4" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tZ_le-zo1e8rLagFvmTs-29" parent="1" style="text;whiteSpace=wrap;" value="Res = [1,2,3,4]" vertex="1">
+          <mxGeometry height="40" width="110" x="480" y="1140" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
