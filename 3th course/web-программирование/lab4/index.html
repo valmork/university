@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой список книг</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Мой список книг</h1>
+            <div class="controls">
+                <input type="text" id="bookTitle" placeholder="Название книги">
+                <input type="text" id="bookAuthor" placeholder="Автор">
+                <button id="addBookBtn">Добавить книгу</button>
+            </div>
+        </header>
+
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">Все книги</button>
+            <button class="filter-btn" data-filter="unread">Не прочитано</button>
+            <button class="filter-btn" data-filter="read">Прочитано</button>
+        </div>
+
+        <div class="search-section">
+            <h3>Поиск книг через Open Library</h3>
+            <div class="search-controls">
+                <input type="text" id="searchInput" placeholder="Введите название книги для поиска">
+                <button id="searchBtn">Найти</button>
+            </div>
+            <div id="searchResults"></div>
+        </div>
+
+        <ul id="bookList">
+
+        </ul>
+
+        <div class="stats">
+            <p>Всего книг: <span id="totalBooks">0</span></p>
+            <p>Прочитано: <span id="readBooks">0</span></p>
+            <p>Осталось прочитать: <span id="unreadBooks">0</span></p>
+        </div>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
