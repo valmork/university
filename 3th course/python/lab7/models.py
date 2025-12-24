@@ -1,17 +1,22 @@
 import sqlite3
 import os
 
+# Определяем абсолютный путь к базе данных
+def get_db_path():
+    """Возвращает абсолютный путь к файлу базы данных"""
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(base_dir, 'students.db')
+    print(f"DB Path: {db_path}")  # Для отладки
+    return db_path
+
 def init_db():
-    """Инициализация базы данных и создание таблиц"""
-    # Удаляем старый файл базы если он существует
-    if os.path.exists('students.db'):
-        os.remove('students.db')
-        print("Старая база данных удалена")
+    """Инициализация базы данных - создает таблицы если их нет"""
+    db_path = get_db_path()
     
-    conn = sqlite3.connect('students.db')
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     
-    # Создаем таблицу студентов с уникальным ограничением
+    # Создаем таблицу если ее нет
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS students (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,13 +26,16 @@ def init_db():
             phone TEXT,
             email TEXT,
             enrollment_year INTEGER,
-            UNIQUE(full_name, birth_date, group_name)  -- Уникальная комбинация
+            UNIQUE(full_name, birth_date, group_name)
         )
     ''')
     
-    # Добавление тестовых данных
+    # Проверяем, есть ли тестовые данные
     cursor.execute("SELECT COUNT(*) FROM students")
-    if cursor.fetchone()[0] == 0:
+    student_count = cursor.fetchone()[0]
+    
+    # Добавляем тестовые данные ТОЛЬКО если таблица пустая
+    if student_count == 0:
         print("Добавляем тестовые данные в базу...")
         
         students = [
@@ -42,23 +50,27 @@ def init_db():
                 INSERT INTO students (full_name, birth_date, group_name, phone, email, enrollment_year) 
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', students)
-            print("Тестовые данные успешно добавлены!")
-        except sqlite3.IntegrityError:
-            print("Некоторые тестовые данные уже существуют")
+            print("✅ Тестовые данные успешно добавлены!")
+        except sqlite3.IntegrityError as e:
+            print(f"⚠️ Некоторые тестовые данные уже существуют: {e}")
+    else:
+        print(f"📊 В базе уже есть {student_count} студентов, тестовые данные не добавляем")
     
     conn.commit()
     conn.close()
-    print("База данных успешно инициализирована!")
+    print("✅ База данных успешно инициализирована!")
 
 def get_db_connection():
     """Создание соединения с базой данных"""
-    conn = sqlite3.connect('students.db')
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 
 def check_db_exists():
     """Проверка существования файла базы данных"""
-    return os.path.exists('students.db')
+    db_path = get_db_path()
+    return os.path.exists(db_path)
 
 def student_exists(full_name, birth_date, group_name):
     """Проверяет, существует ли студент с такими данными"""
