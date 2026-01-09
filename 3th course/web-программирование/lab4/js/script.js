@@ -1,22 +1,28 @@
-
+// Основной массив с книгами (главное хранилище данных приложения)
 let books = [];
+
+// Текущий фильтр отображения: all | read | unread
 let currentFilter = 'all'; 
 
+// Ключ для хранения данных в LocalStorage
 const STORAGE_KEY = 'my_book_list_v1';
 
 
+// Сохранение текущего массива книг в LocalStorage
 function saveToStorage() {
   try {
+    // Преобразуем массив в JSON-строку и сохраняем
     localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
   } catch (e) {
     console.error('Не удалось сохранить данные в LocalStorage', e);
   }
 }
 
-
+// Загрузка данных из LocalStorage при старте страницы
 function loadFromStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
+    // Если данные есть — парсим JSON, иначе создаём пустой массив
     books = raw ? JSON.parse(raw) : [];
   } catch (e) {
     console.error('Не удалось загрузить данные из LocalStorage', e);
@@ -25,17 +31,18 @@ function loadFromStorage() {
 }
 
 
+// Генерация уникального идентификатора для книги
 function genId() {
   return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-
+// Нормализация строки: убираем лишние пробелы
 function norm(str) {
   return String(str || '').trim().replace(/\s+/g, ' ');
 }
 
 
-
+// Пересчёт и отображение статистики книг
 function renderStats() {
   const total = books.length;
   const read = books.filter(b => b.read).length;
@@ -46,15 +53,21 @@ function renderStats() {
   $('#unreadBooks').text(unread);
 }
 
+
+// Преобразование объекта книги в HTML-разметку
 function bookToHTML(b) {
   return `
     <li class="book-item ${b.read ? 'read' : ''}" data-id="${b.id}">
       <div class="book-info">
-        <div class="book-title" title="Двойной клик — редактировать">${$('<div>').text(b.title).html()}</div>
-        <div class="book-author">${$('<div>').text(b.author || 'Неизвестный автор').html()}</div>
+        <div class="book-title" title="Двойной клик — редактировать">
+          ${$('<div>').text(b.title).html()}
+        </div>
+        <div class="book-author">
+          ${$('<div>').text(b.author || 'Неизвестный автор').html()}
+        </div>
       </div>
       <div class="book-actions">
-        <button class="toggle-read-btn" title="Отметить как ${b.read ? 'не прочитано' : 'прочитано'}">
+        <button class="toggle-read-btn" title="Изменить статус">
           ${b.read ? 'Сделать непрочитанной' : 'Отметить как прочитано'}
         </button>
         <button class="delete-btn" title="Удалить">Удалить</button>
@@ -63,6 +76,7 @@ function bookToHTML(b) {
   `;
 }
 
+// Применение фильтра к массиву книг
 function applyFilter(arr) {
   switch (currentFilter) {
     case 'read':   return arr.filter(b => b.read);
@@ -71,6 +85,7 @@ function applyFilter(arr) {
   }
 }
 
+// Полная перерисовка списка книг
 function renderList(withAnimation = false) {
   const list = $('#bookList');
   list.empty();
@@ -78,10 +93,12 @@ function renderList(withAnimation = false) {
   const toShow = applyFilter(books);
 
   if (toShow.length === 0) {
-    list.append(`<li class="search-result-item" style="cursor:default">Список пуст</li>`);
+    list.append('<li class="search-result-item" style="cursor:default">Список пуст</li>');
   } else {
     toShow.forEach(b => {
       const $item = $(bookToHTML(b));
+
+      // Анимация при добавлении
       if (withAnimation) {
         $item.hide();
         list.append($item);
@@ -92,17 +109,18 @@ function renderList(withAnimation = false) {
     });
   }
 
+  // После отрисовки обновляем статистику
   renderStats();
 }
 
 
-
+// Добавление новой книги
 function addBook(title, author) {
   const t = norm(title);
   const a = norm(author);
 
+  // Проверка на пустое название
   if (!t) {
-  
     $('#bookTitle').addClass('input-error');
     setTimeout(() => $('#bookTitle').removeClass('input-error'), 600);
     return;
@@ -114,11 +132,14 @@ function addBook(title, author) {
     author: a,
     read: false
   };
+
+  // Добавляем книгу в начало массива
   books.unshift(book);
   saveToStorage();
   renderList(true);
 }
 
+// Удаление книги
 function deleteBook(id) {
   const idx = books.findIndex(b => b.id === id);
   if (idx >= 0) {
@@ -128,6 +149,7 @@ function deleteBook(id) {
   }
 }
 
+// Переключение статуса "прочитано"
 function toggleRead(id) {
   const b = books.find(x => x.id === id);
   if (b) {
@@ -137,12 +159,13 @@ function toggleRead(id) {
   }
 }
 
+// Редактирование книги (через prompt)
 function editBook(id) {
   const b = books.find(x => x.id === id);
   if (!b) return;
 
   const newTitle = prompt('Изменить название книги:', b.title);
-  if (newTitle === null) return; 
+  if (newTitle === null) return;
 
   const newAuthor = prompt('Изменить автора:', b.author || '');
   if (newAuthor === null) return;
@@ -159,43 +182,45 @@ function editBook(id) {
 }
 
 
-
 let searchInFlight = false;
 
+// Асинхронный поиск книг через внешний API
 async function searchOpenLibrary(query) {
   const q = norm(query);
+
   if (!q) {
-    $('#searchResults').html('<div class="search-result-item" style="cursor:default">Введите запрос для поиска</div>');
+    $('#searchResults').html('<div class="search-result-item">Введите запрос для поиска</div>');
     return;
   }
 
+  // Защита от повторных запросов
   if (searchInFlight) return;
   searchInFlight = true;
 
-  $('#searchResults').html('<div class="search-result-item" style="cursor:default">Идет поиск…</div>');
+  $('#searchResults').html('<div class="search-result-item">Идет поиск…</div>');
 
   try {
-    
     const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=10`;
     const res = await fetch(url);
     if (!res.ok) throw new Error('Ошибка сети');
 
     const data = await res.json();
-
     const docs = Array.isArray(data.docs) ? data.docs : [];
+
     if (docs.length === 0) {
-      $('#searchResults').html('<div class="search-result-item" style="cursor:default">Ничего не найдено</div>');
+      $('#searchResults').html('<div class="search-result-item">Ничего не найдено</div>');
       return;
     }
 
+    // Формирование HTML результатов поиска
     const html = docs.map(d => {
       const title = d.title || 'Без названия';
-      const authors = (d.author_name && d.author_name.length) ? d.author_name.join(', ') : 'Неизвестный автор';
+      const authors = d.author_name?.join(', ') || 'Неизвестный автор';
+
       return `
         <div class="search-result-item js-add-from-search"
              data-title="${$('<div>').text(title).html()}"
-             data-author="${$('<div>').text(authors).html()}"
-             title="Нажмите, чтобы добавить">
+             data-author="${$('<div>').text(authors).html()}">
           <strong>${$('<div>').text(title).html()}</strong><br>
           <em>${$('<div>').text(authors).html()}</em>
         </div>
@@ -205,39 +230,39 @@ async function searchOpenLibrary(query) {
     $('#searchResults').html(html);
   } catch (e) {
     console.error(e);
-    $('#searchResults').html('<div class="search-result-item" style="cursor:default">Ошибка при поиске. Попробуйте позже.</div>');
+    $('#searchResults').html('<div class="search-result-item">Ошибка поиска</div>');
   } finally {
     searchInFlight = false;
   }
 }
 
 
-
 $(function () {
 
+  // Загружаем данные и отрисовываем список
   loadFromStorage();
   renderList();
 
-
+  // Добавление книги
   $('#addBookBtn').on('click', () => {
     const title = $('#bookTitle').val();
     const author = $('#bookAuthor').val();
     addBook(title, author);
+
     if (norm(title)) {
-  
       $('#bookTitle').val('');
       $('#bookAuthor').val('');
     }
   });
 
-
+  // Добавление по Enter
   $('#bookTitle, #bookAuthor').on('keydown', function (e) {
     if (e.key === 'Enter') {
       $('#addBookBtn').click();
     }
   });
 
-
+  // Делегирование событий списка книг
   $('#bookList')
     .on('click', '.delete-btn', function () {
       const id = $(this).closest('.book-item').data('id');
@@ -252,7 +277,7 @@ $(function () {
       editBook(String(id));
     });
 
-
+  // Фильтрация
   $('.filter-btn').on('click', function () {
     $('.filter-btn').removeClass('active');
     $(this).addClass('active');
@@ -260,11 +285,10 @@ $(function () {
     renderList();
   });
 
+  // Поиск
   $('#searchBtn').on('click', () => {
-    const q = $('#searchInput').val();
-    searchOpenLibrary(q);
+    searchOpenLibrary($('#searchInput').val());
   });
-
 
   $('#searchInput').on('keydown', function (e) {
     if (e.key === 'Enter') {
@@ -272,12 +296,9 @@ $(function () {
     }
   });
 
-
+  // Добавление книги из результатов поиска
   $('#searchResults').on('click', '.js-add-from-search', function () {
-    const title = $(this).data('title');
-    const author = $(this).data('author');
-    addBook(title, author);
-
+    addBook($(this).data('title'), $(this).data('author'));
     $(this).fadeOut(120).fadeIn(120);
   });
 });
