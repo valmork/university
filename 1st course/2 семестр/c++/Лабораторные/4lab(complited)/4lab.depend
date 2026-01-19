@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1649687601 source:d:\codeblocks\projects\4lab\main.cpp
+	<fstream>
+	<iomanip>
+	<cstdio>
+	<string>
+	<iostream>
+	<Windows.h>
+

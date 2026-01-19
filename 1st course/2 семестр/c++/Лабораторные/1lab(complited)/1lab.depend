@@ -1,0 +1,23 @@
+# depslib dependency file v1.0
+1647953363 source:d:\codeblocks\projects\1lab\main.cpp
+	"funcs.h"
+	<iostream>
+	<string>
+	<fstream>
+	<iomanip>
+	<cstdio>
+	<Windows.h>
+
+1647544836 d:\codeblocks\projects\1lab\funcs.h
+	<iostream>
+	<string>
+
+1647953361 source:d:\codeblocks\projects\1lab\funcs.cpp
+	"funcs.h"
+	<iostream>
+	<string>
+	<fstream>
+	<iomanip>
+	<cstdio>
+	<Windows.h>
+

@@ -1,0 +1,10 @@
+#include <stdio.h>
+int main()
+{
+    int x, n, c;    
+    scanf("%d", &x);
+    scanf("%d",&n);
+    c = x++*n<n++;
+    printf("%d", c);
+    return 0;
+}

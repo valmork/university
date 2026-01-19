@@ -1,0 +1,45 @@
+#include <stdio.h>
+#include <stdlib.h>
+int main(){    
+    float a, b, h, r;
+    char text = 'X';
+    while(text != 'E')
+    {
+       puts("---Menu---");
+       puts("C - Krug");
+       puts("T - Trapeciya");
+       puts("R - Pryamougolnik");
+       puts("E - Vihod");
+       printf("Viberite punkt menu: ");
+       scanf("%c", &text);
+       switch(text){
+       case 'C':
+          getchar();
+          printf("Vvedite radius: ");
+          scanf("%f", &r);
+          printf("%.2f\n", r * r * 3.14);     
+          getchar();
+          break;
+       case 'T':
+             printf("Vvedite 1 osnovaniye: ");
+             scanf("%f", &a);
+             printf("Vvedite 2 osnovaniye: ");
+             scanf("%f", &b);
+             printf("Vvedite 1 visotu: ");
+             scanf("%f", &h);
+             printf("%.2f\n", ((a * b)/2)*h);        
+             getchar();
+             break;
+       case 'R':
+             printf("Vvedite shirinu: ");
+             scanf("%f", &a);   
+             printf("Vvedite visutu: ");
+             scanf("%f", &b);
+             printf("%.2f\n", a * b);
+             getchar();               
+             break;
+       default: puts("Vvedite znacheniye iz menu");
+    }
+    }
+    return 0;
+}

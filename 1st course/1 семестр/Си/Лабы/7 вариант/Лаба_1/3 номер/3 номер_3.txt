@@ -1,0 +1,46 @@
+#include <stdio.h>
+#include <stdlib.h>
+int main(){    
+    float a, b, h, r;
+    char text = 'X';
+       for(;; text){
+                 puts("---Menu---");
+                 puts("C - Krug");
+                 puts("T - Trapeciya");
+                 puts("R - Pryamougolnik");
+                 puts("E - Vihod");
+                 printf("Viberite punkt menu: ");
+                 scanf("%c", &text);
+                 
+                 if (text == 'C'){
+                    printf("Vvedite radius: ");
+                    scanf("%f", &r);
+                    printf("%.2f\n\n", r * r * 3.14);     
+
+                    }
+                 if (text == 'T'){
+                    printf("Vvedite 1 osnovaniye: ");
+                    scanf("%f", &a);
+                    printf("Vvedite 2 osnovaniye: ");
+                    scanf("%f", &b);
+                    printf("Vvedite 1 visotu: ");
+                    scanf("%f", &h);
+                    printf("%.2f\n\n", ((a * b)/2)*h);        
+
+                    }
+                 if (text == 'R'){
+                    printf("Vvedite shirinu: ");
+                    scanf("%f", &a);   
+                    printf("Vvedite visutu: ");
+                    scanf("%f", &b);
+                    printf("%.2f\n\n", a * b);
+              
+                    }
+                 if (text == 'E'){
+                      break;
+                 }
+                 scanf("%c", &text);
+    
+    }
+    return 0;
+}

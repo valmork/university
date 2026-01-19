@@ -1,0 +1,17 @@
+#include <stdio.h>
+#include <math.h>
+int main(){
+    while(1 == 1){    
+    float e, w, x, y, a, chislitel, znamenatel, res;
+    printf("Vvedite znacheniya e, w, x, y, a: ");
+    scanf("%f %f %f %f %f", &e, &w, &x, &y, &a);
+    chislitel = (pow(e, sqrt(1 + w))) * fabs(x - y);
+    //printf("%f\n", chislitel);
+    znamenatel = pow((1 + 2*x), pow(a, w));
+    //printf("%f\n", znamenatel);
+    res = chislitel/znamenatel - pow((x+y), pow(w, a));
+    printf("%.2f\n", res);
+    getchar();
+}
+    return 0;
+}

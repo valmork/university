@@ -1,0 +1,245 @@
+#include <stdio.h>
+#include <string.h>
+#include <locale.h>
+#include <malloc.h>
+enum Menu { Z1 = 1, Z2, Z3, Z4, Z5, Z6, Z7, exit } m;
+
+struct date
+{
+    int day;
+    int month;
+    int year;
+};
+struct prod
+{
+    int num;
+    char name[50];
+    char surname[50];
+    char familiya[50];
+    char address[50];
+    long int phone;
+    char gender[50];
+    long int oklad;
+    struct date date2;
+};
+
+void add(int* n, struct prod** s)   
+{                                     
+	*n = *n + 1;                      
+	*s = (struct prod*)realloc(*s, *n * sizeof(struct prod));
+	printf("Введите код нового продавца: \n");
+	int a = 0;
+	do {
+		scanf("%d", &a);
+		getchar();
+		for (int i = 0; i < *n; i++)
+			if (((*s + i)->num) == a)
+			{
+				printf("Введите другой код\n");
+				a = 0;
+			}
+	} while (a == 0);
+	(*s + *n - 1)->num = a;
+	printf("Введите фамилию\n");
+	gets((*(*s + *n - 1)).familiya);
+	printf("Введите имя\n");
+	gets((*s + *n - 1)->name);
+    printf("Введите отчество\n");
+	gets((*s + *n - 1)->surname);
+    printf("Введите адрес\n");
+	gets((*s + *n - 1)->address);
+	printf("Введите пол.\n");
+	gets((*s + *n - 1)->gender);
+	printf("Введите телефон.\n");
+	scanf("%u", &((*s + *n - 1)->phone));
+	getchar();
+	printf("Введите дату рождения продавца (формат - ДД.ММ.ГГГГ)\n");
+	scanf("%d.%d.%u", &(*s + *n - 1)->date2.day, &(*s + *n - 1)->date2.month, &(*s + *n - 1)->date2.year);
+}
+
+struct prod*
+	del(int a, int* n, struct prod* Pr)  // начало 2 подпрограммы
+{
+	for (int i = 0; i < *n; i++)
+	{
+		if (Pr[i].num == a)
+		{
+			for (int j = i; j < *n; j++)
+			{
+				Pr[j] = Pr[j + 1];
+			}
+			*n = *n - 1;
+			Pr = (struct prod*)realloc(Pr, *n * sizeof(struct prod));
+			break;
+		}
+	}
+	return Pr;
+}
+
+int tabl(int N, struct prod* P)         // начало 3 подпрограммы
+{                                          // не используем указатель, т.к. значение n должно изменяться только в этой подпрограмме
+	if (N == 0)
+		return 0;
+	else
+	{
+		tabl(N - 1, P);                   // функция вызывает саму себя
+        printf ("|------------------------------------|------------------------|\n");
+        printf ("|Номер                               |%24d|\n", P[N-1].num );
+        printf ("|Фамилия                             |%24s|\n", P[N-1].familiya);
+        printf ("|Имя                                 |%24s|\n", P[N-1].name );
+        printf ("|Отчество                            |%24s|\n", P[N-1].surname);
+        printf ("|Адрес                               |%24s|\n", P[N-1].address);
+        printf ("|Телефон                             |%24d|\n", P[N-1].phone );
+        printf ("|Пол(f, m)                           |%24s|\n", P[N-1].gender);
+        printf ("|Оклад                               |%24d|\n", P[N-1].oklad);
+        printf ("|Дата рождения                       |%17d.%d.%d|\n", P[N-1].date2.day, P[N-1].date2.month, P[N-1].date2.year);
+        printf ("|------------------------------------|------------------------|\n");
+	}
+}
+
+int scan(int N, struct prod* P, char Familiya[50])         // начало 4 подпрограммы
+{
+	if (N == 0)
+		return 0;
+	else
+	{
+
+		scan(N - 1, P, Familiya);
+		if (strcmp(P[N - 1].familiya, Familiya) == 0)
+		{
+            tabl(N - 1, P);                   // функция вызывает саму себя
+            printf ("|------------------------------------|------------------------|\n");
+            printf ("|Номер                               |%24d|\n", P[N-1].num );
+            printf ("|Фамилия                             |%24s|\n", P[N-1].familiya);
+            printf ("|Имя                                 |%24s|\n", P[N-1].name );
+            printf ("|Отчество                            |%24s|\n", P[N-1].surname);
+            printf ("|Адрес                               |%24s|\n", P[N-1].address);
+            printf ("|Телефон                             |%24d|\n", P[N-1].phone );
+            printf ("|Пол(f, m)                           |%24s|\n", P[N-1].gender);
+            printf ("|Оклад                               |%24d|\n", P[N-1].oklad);
+            printf ("|Дата рождения                       |%19d.%d.%d|\n", P[N-1].date2.day, P[N-1].date2.month, P[N-1].date2.year);
+            printf ("|------------------------------------|------------------------|\n");
+		}
+	}
+}
+
+int scan1(int N, struct prod* P, char F[2], int year)         // начало 5 подпрограммы
+{
+	if (N == 0)
+		return 0;
+	else
+	{
+
+		scanf(N - 1, P, F, year);
+		if ((strcmp(P[N - 1].gender, F) == 0) && (P[N - 1].date2.year == year))
+		{
+            tabl(N - 1, P);                   // функция вызывает саму себя
+            printf ("|------------------------------------|------------------------|\n");
+            printf ("|Номер                               |%24d|\n", P[N-1].num );
+            printf ("|Фамилия                             |%24s|\n", P[N-1].familiya);
+            printf ("|Имя                                 |%24s|\n", P[N-1].name );
+            printf ("|Отчество                            |%24s|\n", P[N-1].surname);
+            printf ("|Адрес                               |%24s|\n", P[N-1].address);
+            printf ("|Телефон                             |%24d|\n", P[N-1].phone );
+            printf ("|Пол(f, m)                           |%24s|\n", P[N-1].gender);
+            printf ("|Оклад                               |%24d|\n", P[N-1].oklad);
+            printf ("|Дата рождения                       |%19d.%d.%d|\n", P[N-1].date2.day, P[N-1].date2.month, P[N-1].date2.year);
+            printf ("|------------------------------------|------------------------|\n");
+		}
+	}
+}
+
+main()
+{
+	setlocale(LC_ALL, "Russian");
+	system("chcp 1251");
+	char Familiya[50];
+	char way[50];
+	FILE* f = NULL;
+	FILE* en = NULL;
+	int year, m, d, a, n = 0, g = 0;
+	d = 1;
+	char F[2] = { "f" };
+	struct prod* P = (struct prod*)malloc(n * sizeof(struct prod));
+	struct prod** s = &P;
+
+	do {
+		printf("Меню:\n1 - Добавления информации о новом продавце в конец массива\n2 - Удаления информации о продавце по табельному номеру\n3 - Отображения информации о продавцах в виде таблицы\n4 - Поиска информации о продавцах с указанной фамилией\n5 - Определения количества продавцов женского пола, родившихся в указанном году\n");
+		printf("6 - Запись данных в файл.\n7 - Запись из файла.\n8 - Выход.\n");
+		scanf("%d", &m);
+		getchar();
+		switch (m)
+		{
+		case Z1:
+			add(&n, s);
+			break;
+		case Z2:
+			printf("Введите номер продавца:");
+			scanf("%d", &a);
+			*s = del(a, &n, P);
+
+			printf("\n");
+			break;
+		case Z3:
+			tabl(n, P);
+			break;
+		case Z4:
+			printf("Введите фамилию: ");
+			gets(Familiya);
+			scan(n, P, Familiya);
+			break;
+		case Z5:
+			printf("Введите год рождения: ");
+			scanf("%d", &year);
+			scan1(n, P, F, year);
+			break;
+		case Z6:;
+			printf("Введите путь: ");
+			gets(way);
+			f = fopen(way, "ab");
+			fwrite(P, sizeof(struct prod), n, f);
+			fclose(f);
+			en = fopen("n.txt", "w");
+			fprintf(f, "%d", n);
+			fclose(en);
+			break;
+		case Z7:;
+			int b;
+			printf("Введите путь: ");
+			gets(way);
+			f = fopen(way, "rb");
+			if (f == NULL)
+			{
+				printf("Файл не существует");
+			}
+			else
+			{
+				int i = 0;
+				b = 0;
+				en = fopen("n.txt", "r");
+				a = fgetc(en);
+				do
+				{
+					a = a - '0';
+					b = b * 10 + a;
+					a = fgetc(en);
+				} while (!feof(en));
+				fclose(en);
+				n = n + b;
+				P = (struct prod*)realloc(P, n * sizeof(struct prod));
+				fread(P, sizeof(struct prod), n, f);
+				fclose(f);
+			}
+			break;
+		case exit:
+			d = 0;
+			break;
+		default:
+			printf("Введены некорректные данные.\n");
+			getchar();
+			break;
+		}
+	} while (d != 0);
+	free(P);
+	return 0;
+}

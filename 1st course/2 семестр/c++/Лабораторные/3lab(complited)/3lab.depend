@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1649432015 source:d:\codeblocks\projects\3lab\main.cpp
+	<iostream>
+	<string>
+	<cstring>
+	<algorithm>
+	<cctype>
+

@@ -1,0 +1,38 @@
+#include <stdio.h>
+#include <stdlib.h>
+int main(){    
+    float a, b, h, r;
+    char text[2];
+    do{
+       puts("---Menu---");
+       puts("C - Krug");
+       puts("T - Trapeciya");
+       puts("R - Pryamougolnik");
+       puts("E - Vihod");
+       printf("Viberite punkt menu: ");
+       scanf("%s", text);
+       if (strcmp(text, "C")== 0){
+          getchar();
+          printf("Vvedite radius: ");
+          scanf("%f", &r);
+          printf("%.2f\n", r * r * 3.14);     
+        }
+        else if (strcmp(text, "T") == 0){
+             printf("Vvedite 1 osnovaniye: ");
+             scanf("%f", &a);
+             printf("Vvedite 2 osnovaniye: ");
+             scanf("%f", &b);
+             printf("Vvedite 1 visotu: ");
+             scanf("%f", &h);
+             printf("%.2f\n", ((a * b)/2)*h);        
+        }
+        else if (strcmp(text, "R") == 0){
+             printf("Vvedite shirinu: ");
+             scanf("%f", &a);   
+             printf("Vvedite visutu: ");
+             scanf("%f", &b);
+             printf("%.2f\n", a * b);               
+        }
+    }while(strcmp(text, "E") != 0);
+    return 0;
+}

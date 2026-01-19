@@ -1,0 +1,10 @@
+#include <stdio.h>
+int main()
+{
+    int x, n, c;    
+    scanf("%d", &x);
+    scanf("%d",&n);
+    c = -x+--n+2;
+    printf("%d", c);
+    return 0;
+}
