@@ -1,0 +1,7 @@
+# Visual Studio files
+.vs/
+Debug/
+x64/
+*.obj
+*.pdb
+*.ipch
