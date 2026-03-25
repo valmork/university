@@ -19,7 +19,7 @@ HINSTANCE hInst;
 HWND hWnd;
 WCHAR szTitle[] = L"Graphics";
 WCHAR szWindowClass[] = L"Graphics";
-
+ 
 ATOM MyRegisterClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
