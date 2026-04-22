@@ -13,13 +13,14 @@
 #include <stack>
 #include <tuple>
 #include <stdlib.h>
+#include <algorithm>  
 
 
 HINSTANCE hInst;
 HWND hWnd;
 WCHAR szTitle[] = L"Graphics";
 WCHAR szWindowClass[] = L"Graphics";
-
+ 
 ATOM MyRegisterClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -38,7 +39,6 @@ float aspectRatio;
 POINT pmin = { 0, 70 }, pmax;
 PointF wmin = { 0, 0 }, wmax = { 1, 1 };
 
-/* Экранная система координат */
 POINT worldToScreen(PointF p)
 {
     return {
@@ -46,7 +46,6 @@ POINT worldToScreen(PointF p)
         pmax.y - (LONG)round((p.y - wmin.y) * (pmax.y - pmin.y) / (wmax.y - wmin.y)) };
 }
 
-/* Мировая система координат */
 PointF screenToWorld(POINT p)
 {
     return {
@@ -63,7 +62,6 @@ enum FigureType
     FigureType_ELLIPSE
 };
 
-/* Структура, где хранятся фигуры */
 struct Figure
 {
     PointF start;
@@ -104,7 +102,6 @@ auto zoomHistory = std::stack<std::pair<PointF, PointF>>();
 FigureType selectedFigureType = FigureType_LINE;
 std::vector<Figure> figures;
 
-/* Структура кнопки */
 struct Button
 {
     Button(int left, int top, int right, int bottom, std::function<void(Button&)> delegate, LPCWSTR txt) : text(txt)
@@ -160,10 +157,8 @@ std::vector<Button> btns = {
      },
      L"Эллипс"} };
 
-/* Точка входа */
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
-    // Создание класса окна
     MyRegisterClass(hInstance);
 
     if (!InitInstance(hInstance, nCmdShow))
@@ -175,10 +170,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 
     while (GetMessage(&msg, nullptr, 0, 0))
     {
-        // Превращение нажатия клавиш в символы
         TranslateMessage(&msg);
-
-        // Передача сообщения в наше окно
         DispatchMessage(&msg);
     }
 
@@ -192,61 +184,52 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbSize = sizeof(WNDCLASSEX);
 
     wcex.style = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc = WndProc; // какая функция будет обрабатывать сообщения
+    wcex.lpfnWndProc = WndProc;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
     wcex.hInstance = hInstance;
     wcex.hIcon = LoadIcon(hInstance, nullptr);
-    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW); // форма курсора
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1); // цвет фона
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName = nullptr;
-    wcex.lpszClassName = szWindowClass; // имя класса — по нему потом создаём окно
+    wcex.lpszClassName = szWindowClass;
     wcex.hIconSm = LoadIcon(hInstance, nullptr);
 
     return RegisterClassExW(&wcex);
 }
 
-// Инициализация, создаёт реальное окно по зарегистрированному классу
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-    // Дескриптор приложения
     hInst = hInstance;
 
-    // Дескриптор окна
     hWnd = CreateWindowW(szWindowClass, szTitle, WS_SYSMENU,
         CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
     {
-        return FALSE; 
+        return FALSE;
     }
 
-    ShowWindow(hWnd, nCmdShow); // показать
-    UpdateWindow(hWnd); // сразу перерисовать
+    ShowWindow(hWnd, nCmdShow);
+    UpdateWindow(hWnd);
 
     return TRUE;
 }
 
-/* Главный обработчик всех сообщений через switch-case */
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
     case WM_CREATE:
-    {   
-        // Предварительное перо
+    {
         selectionPen = CreatePen(PS_SOLID, 4, RGB(0, 255, 0));
-        // Перо, которым рисуются фигуры
         drawingPen = CreatePen(PS_SOLID, 4, RGB(0, 0, 0));
-        // Перо зума
         zoomingPen = CreatePen(PS_SOLID, 4, RGB(0, 0, 255));
     }
     break;
-    /* Рисование окна */
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
-        // Операция рисования. Заполняет структуру PAINTSTRUCT сведениями о запросе на перерисовку.
         hdc = BeginPaint(hWnd, &ps);
 
         HPEN interfacePen = CreatePen(PS_SOLID, 4, RGB(0, 0, 0));
@@ -258,8 +241,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         SelectObject(hdc, oldBrush);
         DeleteObject(backgroundBrush);
 
-        // Рисование пользовательских фигур, NULL_BRUSH чтобы внутри фигуры не было заливки, только контур
-        oldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
+        oldBrush = SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
         for (auto figure : figures)
         {
             figure.draw(hdc);
@@ -283,11 +265,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_SIZE:
     {
         pmax = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-        // Резиновый прямоугольник зума
         aspectRatio = (float)(pmax.x - pmin.x) / (float)(pmax.y - pmin.y);
     }
     break;
-    /* Левая кнопка вниз */
     case WM_LBUTTONDOWN:
     {
         if (mousePosition.y < pmin.y)
@@ -316,7 +296,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
     }
     break;
-    /* Кнопка справа вниз */
     case WM_RBUTTONDOWN:
     {
         if (mousePosition.y < pmin.y)
@@ -334,29 +313,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
     }
     break;
-    /* Левая кнопка вверх */
     case WM_LBUTTONUP:
     {
         if (isDrawing)
         {
-            // Стирается последнее положение резиновой нити
-
-            // Перемещение пера
             MoveToEx(hdc, selection.first.x, selection.first.y, NULL);
-            // Рисование линии от текущей позиции пера
             LineTo(hdc, selection.second.x, selection.second.y);
 
             isDrawing = false;
 
-            SetROP2(hdc, R2_COPYPEN); // возвращается обычный режим рисования
+            SetROP2(hdc, R2_COPYPEN);
 
             oldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
 
-            // Перевод экранных координат в мировые 
             PointF worldTopLeft = screenToWorld(selection.first);
             PointF worldBottomRight = screenToWorld(selection.second);
-
-            // Добавление фигуры в хранилище
             Figure f = { worldTopLeft, worldBottomRight, selectedFigureType };
             figures.push_back(f);
 
@@ -367,35 +338,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             ReleaseDC(hWnd, hdc);
         }
     }
-    /* Правая кнопка вверх */
     case WM_RBUTTONUP:
+{
+    if (isZooming)
     {
-        if (isZooming)
-        {
-            MoveToEx(hdc, zoom.first.x, zoom.first.y, NULL);
-            Rectangle(hdc, zoom.first.x, zoom.first.y, zoom.second.x, zoom.second.y);
+        // Обновляем позицию мыши
+        mousePosition.x = GET_X_LPARAM(lParam);
+        mousePosition.y = GET_Y_LPARAM(lParam);
+        
+        MoveToEx(hdc, zoom.first.x, zoom.first.y, NULL);
+        Rectangle(hdc, zoom.first.x, zoom.first.y, zoom.second.x, zoom.second.y);
 
-            isZooming = false;
+        isZooming = false;
 
-            SetROP2(hdc, R2_COPYPEN);
+        SetROP2(hdc, R2_COPYPEN);
 
-            zoomHistory.push({ wmax, wmin });
+        zoomHistory.push({ wmax, wmin });
 
-            POINT bottomLeft = { min(zoom.first.x, zoom.second.x), max(zoom.first.y, zoom.second.y) };
-            POINT topRight = { max(zoom.first.x, zoom.second.x), min(zoom.first.y, zoom.second.y) };
+        POINT bottomLeft = { std::min(zoom.first.x, zoom.second.x), 
+                             std::max(zoom.first.y, zoom.second.y) };
+        POINT topRight = { std::max(zoom.first.x, zoom.second.x), 
+                           std::min(zoom.first.y, zoom.second.y) };
 
-            PointF wminNew = screenToWorld(bottomLeft);
-            wmax = screenToWorld(topRight);
-            wmin = wminNew;
+        PointF wminNew = screenToWorld(bottomLeft);
+        wmax = screenToWorld(topRight);
+        wmin = wminNew;
 
-            InvalidateRect(hWnd, NULL, true);
+        InvalidateRect(hWnd, NULL, true);
 
-            SelectObject(hdc, oldPen);
-            ReleaseDC(hWnd, hdc);
-        }
+        SelectObject(hdc, oldPen);
+        ReleaseDC(hWnd, hdc);
     }
+    break; 
+}
     break;
-    /* Движение мышью */
     case WM_MOUSEMOVE:
     {
         if (isDrawing)
@@ -434,12 +410,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     break;
     case WM_DESTROY:
-        // Удаление всех объектов
         DeleteObject(selectionPen);
         DeleteObject(drawingPen);
         DeleteObject(zoomingPen);
-
-        // Создает сообщение о закрытии приложения
         PostQuitMessage(0);
         break;
     default:
