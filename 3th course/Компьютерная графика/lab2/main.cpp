@@ -1,6 +1,8 @@
 
 #include <math.h>
 
+#include <cstdio>
+
 #include <tuple>
 
 #include <GLUT/glut.h>
@@ -17,9 +19,17 @@ inline constexpr float coneBase = 0.03f;
 float S = 0.7;
 
 void specialkeys(int key, int x, int y) {
+    switch(key) {
+        case GLUT_KEY_LEFT:  rot -= 5; break;
+        case GLUT_KEY_RIGHT: rot += 5; break;
+        case GLUT_KEY_UP:    ro  += 5; break;
+        case GLUT_KEY_DOWN:  ro  -= 5; break;
+        default:
+            ex = key;  // только F-клавиши меняют сцену
+            break;
+    }
+    glutPostRedisplay();
 }
-
-
 
 
 void drawAxes() {
