@@ -25,15 +25,16 @@
 )
 
 (defrule start-diagnosis
+  (declare (salience 20)) 
   (not (diagnosis))
   (not (diagnosis-done yes))
   (not (exit yes))
   =>
-  (printout t "*     ЭКСПЕРТНАЯ СИСТЕМА ОБНАРУЖЕНИЯ ВИРУСОВ        *" crlf)
+  (printout t "ЭКСПЕРТНАЯ СИСТЕМА ОБНАРУЖЕНИЯ ВИРУСОВ" crlf)
   (printout t crlf "Отвечайте 'yes' или 'no' на каждый вопрос." crlf crlf)
 )
 
-;; СБОР СИМПТОМОВ
+;; СБОР СИМПТОМОВ (ВИРУСЫ)
 
 (defrule file-virus-symptoms
   (not (diagnosis))
@@ -170,7 +171,7 @@
   )
 )
 
-;; ДИАГНОСТИЧЕСКИЕ ПРАВИЛА (приоритет 10 и 9)
+;; ДИАГНОСТИЧЕСКИЕ ПРАВИЛА (ЛЕЧЕНИЕ)
 
 (defrule diagnose-file-virus
   (declare (salience 10))
@@ -285,19 +286,38 @@
 
 ;; ПРАВИЛА ОТСУТСТВИЯ ВИРУСА И ВЫВОДА
 
-(defrule no-virus-found
-  (declare (salience 5))
+(defrule all-questions-answered
+  (declare (salience 1))
+  (file-checked)
+  (boot-checked)
+  (macro-checked)
+  (script-checked)
+  (worm-checked)
+  (trojan-checked)
+  (ransom-checked)
+  (keylog-checked)
+  (av-checked)
   (not (diagnosis))
   (not (diagnosis-done yes))
-  (exit no)
+  (not (all-done))          
   =>
-  (printout t crlf "По имеющимся симптомам не удалось идентифицировать вирус." crlf)
+  (assert (all-done))
+)
+
+(defrule no-virus-found
+  (declare (salience 5))
+  (all-done)                
+  (not (diagnosis))
+  (not (diagnosis-done yes))
+  =>
+  (printout t "По имеющимся симптомам не удалось идентифицировать вирус." crlf)
   (printout t "Возможно, проблема вызвана сбоем оборудования или программным конфликтом." crlf)
   (assert (exit yes))
+  (assert (diagnosis-done yes))
 )
 
 (defrule print-diagnosis
-  (declare (salience 10))
+  (declare (salience 10)) 
   (diagnosis (description ?text))
   =>
   (printout t "РЕЗУЛЬТАТ ДИАГНОСТИКИ:" crlf)

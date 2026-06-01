@@ -1,3 +1,4 @@
+//g++ -o snowman main.cpp -framework OpenGL -framework GLUT -arch arm64 -Wno-deprecated
 
 #include <math.h>
 
@@ -33,13 +34,133 @@ void specialkeys(int key, int x, int y) {
 
 
 void drawAxes() {
+    // Длина осей = радиус сферы + небольшой выступ
+    float axisLength = smRad + 0.15f;  // 0.38 + 0.15 = 0.53
+    
+    glLineWidth(2.0f);
+    glBegin(GL_LINES);
+    
+    // Ось X — красная (от -radius до +radius)
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(-axisLength, 0.0f, 0.0f);
+    glVertex3f( axisLength, 0.0f, 0.0f);
+    
+    // Ось Y — зелёная
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.0f, -axisLength, 0.0f);
+    glVertex3f(0.0f,  axisLength, 0.0f);
+    
+    // Ось Z — синяя (добавим для полноты)
+    glColor3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(0.0f, 0.0f, -axisLength);
+    glVertex3f(0.0f, 0.0f,  axisLength);
+    
+    glEnd();
+    glLineWidth(1.0f);
 }
 
 
 void drawSnowManDecomposed() {
+
+	drawAxes();
+
+    float x = 0; // начинаем с начала координат
+
+    // Тело — большая сфера
+    glPushMatrix();
+    glTranslatef(x, smRad, 0.0f);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glutSolidSphere(smRad, 30, 30);
+    glPopMatrix();
+
+    x += smRad + smRadH + 0.02f; // сдвиг вправо
+
+    // Голова — маленькая сфера
+    glPushMatrix();
+    glTranslatef(x, smRadH, 0.0f);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glutSolidSphere(smRadH, 20, 20);
+    glPopMatrix();
+
+    x += smRadH + smRadMin + 0.02f;
+
+    // Глаз левый
+    glPushMatrix();
+    glTranslatef(x, smRadMin, 0.0f);
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glutSolidSphere(smRadMin, 10, 10);
+    glPopMatrix();
+
+    x += smRadMin * 2 + 0.01f;
+
+    // Глаз правый
+    glPushMatrix();
+    glTranslatef(x, smRadMin, 0.0f);
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glutSolidSphere(smRadMin, 10, 10);
+    glPopMatrix();
+
+    x += 2 * smRadMin + coneBase + 0.02f;
+
+    // Нос — конус
+    glPushMatrix();
+    glTranslatef(x, 0.0f, 0.0f);
+    glColor3f(1.0f, 0.3f, 0.3f);
+    // поворачиваем конус чтобы смотрел вверх
+    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+    glutSolidCone(coneBase, coneHeight, 20, 2);
+    glPopMatrix();
 }
 
 void drawSnowManComposed() {
+
+	drawAxes();
+
+    float y = 0.0f;
+
+    // Тело
+    glPushMatrix();
+    glRotatef(rot, 0.0f, 1.0f, 0.0f);
+    glTranslatef(0.0f, y, 0.0f);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glutSolidSphere(smRad, 30, 30);
+    glPopMatrix();
+
+    y += smRad + smRadH;
+
+    // Голова
+    glPushMatrix();
+    glRotatef(rot, 0.0f, 1.0f, 0.0f);
+    glTranslatef(0.0f, y, 0.0f);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glutSolidSphere(smRadH, 20, 20);
+    glPopMatrix();
+
+    y += smRadMin;
+
+    // Нос
+    glPushMatrix();
+    glRotatef(rot, 0.0f, 1.0f, 0.0f);
+    glColor3f(1.0f, 0.3f, 0.3f);
+    glTranslatef(0.0f, y - coneBase / 2, coneHeight / 2 - 0.01f);
+    glutSolidCone(coneBase, coneHeight, 20, 2);
+    glPopMatrix();
+
+    // Глаз левый
+    glPushMatrix();
+    glRotatef(rot, 0.0f, 1.0f, 0.0f);
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glTranslatef(-0.035f, y + 0.035f, coneHeight / 2);
+    glutSolidSphere(smRadMin, 10, 10);
+    glPopMatrix();
+
+    // Глаз правый
+    glPushMatrix();
+    glRotatef(rot, 0.0f, 1.0f, 0.0f);
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glTranslatef(0.035f, y + 0.035f, coneHeight / 2);
+    glutSolidSphere(smRadMin, 10, 10);
+    glPopMatrix();
 }
 
 
@@ -230,121 +351,125 @@ void scene() {
 		break;
 	}
 	case GLUT_KEY_F4: {
-		//Первый снеговик
 		float y = 0.0f;
 
+		// === Первый снеговик ===
+		// Вращение вокруг оси Z его ГКС
 		glPushMatrix();
-		glTranslatef(0.0f, y, 0.0f);
 		drawAxes();
-		glColor3f(1.0f, 1.0f, 1.0f);	
+		glRotatef(-rot, 0, 0, 1); // вращение вокруг Z, противоположное второму
+		glTranslatef(0.0f, y, 0.0f);
+		glColor3f(1.0f, 1.0f, 1.0f);
 		glutSolidSphere(smRad, 30, 30);
+		glPopMatrix();
 
 		y += smRad + smRadH;
-		glPopMatrix();
 		glPushMatrix();
+		glRotatef(-rot, 0, 0, 1);
 		glTranslatef(0.0f, y, 0.0f);
+		glColor3f(1.0f, 1.0f, 1.0f);
 		glutSolidSphere(smRadH, 20, 20);
 
-		y += smRadMin; 
+		y += smRadMin;
 		glPopMatrix();
 		glPushMatrix();
+		glRotatef(-rot, 0, 0, 1);
 		glColor3f(1.0f, 0.3f, 0.3f);
 		glTranslatef(0.0f, y - coneBase / 2, coneHeight / 2 - 0.01f);
-		
 		glutSolidCone(coneBase, coneHeight, 20, 2);
-			
-		glPopMatrix();
-		glPushMatrix();
-		glColor3f(0.0f, 0.0f, 0.0f);
-		glTranslatef(-0.035f, y + 0.035, coneHeight / 2);
-		glutSolidSphere(smRadMin, 10, 10);
-			
-		glPopMatrix();
-		glPushMatrix();
-		glColor3f(0.0f, 0.0f, 0.0f);
-		glTranslatef(0.035f, y + 0.035, coneHeight / 2);
-		glutSolidSphere(smRadMin, 10, 10);
-		
 		glPopMatrix();
 
-		//Второй снеговик
+		glPushMatrix();
+		glRotatef(-rot, 0, 0, 1);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glTranslatef(-0.035f, y + 0.035f, coneHeight / 2);
+		glutSolidSphere(smRadMin, 10, 10);
+		glPopMatrix();
+
+		glPushMatrix();
+		glRotatef(-rot, 0, 0, 1);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glTranslatef(0.035f, y + 0.035f, coneHeight / 2);
+		glutSolidSphere(smRadMin, 10, 10);
+		glPopMatrix();
+
+		// === Второй снеговик ===
+		// Вращается вокруг оси проходящей через его нос
 		float shift = (1 + 0.7f) * smRad;
 		float scale = S;
-		
+		y = 0.0f;
+
+		// Позиция носа второго снеговика в ГКС
+		// нос находится на оси Z на расстоянии shift
+		// по Y: (smRad + smRadH + smRadMin) * scale
 		const float noseY = (smRad + smRadH + smRadMin) * scale;
+		const float noseZ = shift;
 
-		y = 0.0f;		
+		// Ось вращения проходит через нос вдоль Z
+		// Сдвигаемся к носу -> вращаем -> возвращаемся
 
 		glPushMatrix();
-		glTranslatef(0.0f, noseY - coneBase / 2, coneHeight / 2 - 0.01f);
+		// переносим начало координат в точку носа
+		glTranslatef(0.0f, noseY, noseZ);
+		// вращаем вокруг Z
 		glRotatef(rot, 0, 0, 1);
-		glTranslatef(0.0f, -(noseY - coneBase / 2), -(coneHeight / 2 - 0.01f));
+		// возвращаемся обратно
+		glTranslatef(0.0f, -noseY, -noseZ);
+		// рисуем второй снеговик
 		glTranslatef(0, 0, shift);
 		glScalef(scale, scale, scale);
-		glTranslatef(0.0f, y, 0.0f);
-		glRotatef(-rot, 0, 0, 1);
 		drawAxes();
-
-		glPopMatrix();
-		glPushMatrix();
-		glTranslatef(0.0f, noseY - coneBase / 2, coneHeight / 2 - 0.01f);
-		glRotatef(rot, 0, 0, 1);
-		glTranslatef(0.0f, -(noseY - coneBase / 2), -(coneHeight / 2 - 0.01f));
-		glTranslatef(0, 0, shift);
-		glScalef(scale, scale, scale);
-		glTranslatef(0.0f, y, 0.0f);
-		glColor3f(1.0f, 1.0f, 1.0f);	
+		glColor3f(1.0f, 1.0f, 1.0f);
 		glutSolidSphere(smRad, 30, 30);
+		glPopMatrix();
 
 		y += smRad + smRadH;
-		glPopMatrix();
 		glPushMatrix();
-		glTranslatef(0.0f, noseY - coneBase / 2, coneHeight / 2 - 0.01f);
+		glTranslatef(0.0f, noseY, noseZ);
 		glRotatef(rot, 0, 0, 1);
-		glTranslatef(0.0f, -(noseY - coneBase / 2), -(coneHeight / 2 - 0.01f));
+		glTranslatef(0.0f, -noseY, -noseZ);
 		glTranslatef(0, 0, shift);
 		glScalef(scale, scale, scale);
 		glTranslatef(0.0f, y, 0.0f);
+		glColor3f(1.0f, 1.0f, 1.0f);
 		glutSolidSphere(smRadH, 20, 20);
-
-		y += smRadMin; 
 		glPopMatrix();
+
+		y += smRadMin;
 		glPushMatrix();
-		glTranslatef(0.0f, noseY - coneBase / 2, coneHeight / 2 - 0.01f);
+		glTranslatef(0.0f, noseY, noseZ);
 		glRotatef(rot, 0, 0, 1);
-		glTranslatef(0.0f, -(noseY - coneBase / 2), -(coneHeight / 2 - 0.01f));
+		glTranslatef(0.0f, -noseY, -noseZ);
+		glTranslatef(0, 0, shift);
+		glScalef(scale, scale, scale);
 		glColor3f(1.0f, 0.3f, 0.3f);
-		glTranslatef(0, 0, shift);
-		glScalef(scale, scale, scale);
 		glTranslatef(0.0f, y - coneBase / 2, coneHeight / 2 - 0.01f);
-		
 		glutSolidCone(coneBase, coneHeight, 20, 2);
-			
-		glPopMatrix();
-		glPushMatrix();
-		glTranslatef(0.0f, noseY - coneBase / 2, coneHeight / 2 - 0.01f);
-		glRotatef(rot, 0, 0, 1);
-		glTranslatef(0.0f, -(noseY - coneBase / 2), -(coneHeight / 2 - 0.01f));
-		glColor3f(0.0f, 0.0f, 0.0f);
-		glTranslatef(0, 0, shift);
-		glScalef(scale, scale, scale);
-		glTranslatef(-0.035f, y + 0.035, coneHeight / 2);
-		glutSolidSphere(smRadMin, 10, 10);
-			
-		glPopMatrix();
-		glPushMatrix();
-		glTranslatef(0.0f, noseY - coneBase / 2, coneHeight / 2 - 0.01f);
-		glRotatef(rot, 0, 0, 1);
-		glTranslatef(0.0f, -(noseY - coneBase / 2), -(coneHeight / 2 - 0.01f));
-		glColor3f(0.0f, 0.0f, 0.0f);
-		glTranslatef(0, 0, shift);
-		glScalef(scale, scale, scale);
-		glTranslatef(0.035f, y + 0.035, coneHeight / 2);
-		glutSolidSphere(smRadMin, 10, 10);
-		
 		glPopMatrix();
 
-		//Третий снеговик
+		glPushMatrix();
+		glTranslatef(0.0f, noseY, noseZ);
+		glRotatef(rot, 0, 0, 1);
+		glTranslatef(0.0f, -noseY, -noseZ);
+		glTranslatef(0, 0, shift);
+		glScalef(scale, scale, scale);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glTranslatef(-0.035f, y + 0.035f, coneHeight / 2);
+		glutSolidSphere(smRadMin, 10, 10);
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslatef(0.0f, noseY, noseZ);
+		glRotatef(rot, 0, 0, 1);
+		glTranslatef(0.0f, -noseY, -noseZ);
+		glTranslatef(0, 0, shift);
+		glScalef(scale, scale, scale);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glTranslatef(0.035f, y + 0.035f, coneHeight / 2);
+		glutSolidSphere(smRadMin, 10, 10);
+		glPopMatrix();
+
+		// === Третий снеговик — неподвижен ===
 		shift = (1 + 2 * 0.7f + 0.7f * 0.7f) * smRad;
 		scale = S * S;
 		y = 0.0f;
@@ -352,49 +477,47 @@ void scene() {
 		glPushMatrix();
 		glTranslatef(0, 0, shift);
 		glScalef(scale, scale, scale);
-		glTranslatef(0.0f, y, 0.0f);
 		drawAxes();
-		glColor3f(1.0f, 1.0f, 1.0f);	
+		glColor3f(1.0f, 1.0f, 1.0f);
 		glutSolidSphere(smRad, 30, 30);
+		glPopMatrix();
 
 		y += smRad + smRadH;
-		glPopMatrix();
 		glPushMatrix();
 		glTranslatef(0, 0, shift);
 		glScalef(scale, scale, scale);
 		glTranslatef(0.0f, y, 0.0f);
 		glutSolidSphere(smRadH, 20, 20);
-
-		y += smRadMin; 
 		glPopMatrix();
+
+		y += smRadMin;
 		glPushMatrix();
 		glColor3f(1.0f, 0.3f, 0.3f);
 		glTranslatef(0, 0, shift);
 		glScalef(scale, scale, scale);
 		glTranslatef(0.0f, y - coneBase / 2, coneHeight / 2 - 0.01f);
-		
 		glutSolidCone(coneBase, coneHeight, 20, 2);
-			
 		glPopMatrix();
+
 		glPushMatrix();
 		glColor3f(0.0f, 0.0f, 0.0f);
 		glTranslatef(0, 0, shift);
 		glScalef(scale, scale, scale);
-		glTranslatef(-0.035f, y + 0.035, coneHeight / 2);
+		glTranslatef(-0.035f, y + 0.035f, coneHeight / 2);
 		glutSolidSphere(smRadMin, 10, 10);
-			
 		glPopMatrix();
+
 		glPushMatrix();
 		glColor3f(0.0f, 0.0f, 0.0f);
 		glTranslatef(0, 0, shift);
 		glScalef(scale, scale, scale);
-		glTranslatef(0.035f, y + 0.035, coneHeight / 2);
+		glTranslatef(0.035f, y + 0.035f, coneHeight / 2);
 		glutSolidSphere(smRadMin, 10, 10);
-		
 		glPopMatrix();
+
 		break;
 	}
-	case GLUT_KEY_F5: 
+	case GLUT_KEY_F9: 
 	{		
 		float y = 0.0f;
 
@@ -562,7 +685,7 @@ void scene() {
 		glPopMatrix();
 		break;
 	}
-	case GLUT_KEY_F6: {		
+	case GLUT_KEY_F5: {		
 		float y = 0.0f;
 
 		glPushMatrix();
@@ -748,7 +871,7 @@ void scene() {
 		glPopMatrix();
 		break;
 	}
-	case GLUT_KEY_F7:
+	case GLUT_KEY_F6:
 	{	
 		float y = 0.0f;
 		const float middlePosition = (1 + 0.7f) * smRad;		
@@ -983,7 +1106,7 @@ void scene() {
 		glPopMatrix();
 		break;
 	}
-	case GLUT_KEY_F8:
+	case GLUT_KEY_F7:
 	{	
 		float y = 0.0f;
 		float middlePosition = 0.0f;		
@@ -1155,7 +1278,7 @@ void scene() {
 		glPopMatrix();
 		break;
 	}
-	case GLUT_KEY_F9:
+	case GLUT_KEY_F8:
 	{	
 		float y = 0.0f;
 		const float middlePosition = (1 + 2 * 0.7f + 0.7 * 0.7) * smRad;		
@@ -1370,57 +1493,6 @@ void scene() {
 	}
 	case GLUT_KEY_F10: 
 	{
-		float y = 0.0f;	
-
-		glPopMatrix();
-		glPushMatrix();
-		drawAxes();
-		glTranslatef(0.0f, y, 0.0f);
-		glColor3f(1.0f, 1.0f, 1.0f);	
-		glutSolidSphere(smRad, 30, 30);
-
-		y += smRad + smRadH;
-		glPopMatrix();
-		glPushMatrix();
-		glRotatef(rot, 0, 0, 1);
-		glTranslatef(0.0f, y, 0.0f);
-		glRotatef(-rot, 0, 0, 1);
-		glutSolidSphere(smRadH, 20, 20);
-
-		y += smRadMin; 
-		glPopMatrix();
-		glPushMatrix();
-		glColor3f(1.0f, 0.3f, 0.3f);
-		glRotatef(rot, 0, 0, 1);
-		glTranslatef(0.0f, y-coneBase / 2, 0.0f);
-		glRotatef(-rot, 0, 0, 1);
-		glTranslatef(0.0f, 0.0f, coneHeight / 2 - 0.01f);
-		
-		glutSolidCone(coneBase, coneHeight, 20, 2);
-			
-		glPopMatrix();
-		glPushMatrix();
-		glColor3f(0.0f, 0.0f, 0.0f);
-		glRotatef(rot, 0, 0, 1);
-		glTranslatef(0.0f, y - smRadMin, 0.0f);
-		glRotatef(-rot, 0, 0, 1);
-		glTranslatef(-0.035f, 0.035 + smRadMin, coneHeight / 2);
-		glutSolidSphere(smRadMin, 10, 10);
-			
-		glPopMatrix();
-		glPushMatrix();
-		glColor3f(0.0f, 0.0f, 0.0f);
-		glRotatef(rot, 0, 0, 1);
-		glTranslatef(0.0f, y - smRadMin, 0.0f);
-		glRotatef(-rot, 0, 0, 1);
-		glTranslatef(0.035f, 0.035 + smRadMin, coneHeight / 2);
-		glutSolidSphere(smRadMin, 10, 10);
-		
-		glPopMatrix();
-		break;
-	}
-	case GLUT_KEY_F11:
-	{	
 		float x = -0.6f;
 		float y = 0.0f;
 		const float middlePosition = (1 + 2 * 0.7f + 0.7 * 0.7) * smRad;	
@@ -1706,16 +1778,28 @@ void scene() {
 
 
 void Display() {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, 800, 800);
-	glLoadIdentity();
-	scene();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glViewport(800, 0, 800, 800);
-	glRotatef(90, 1, 0, 0);
-	scene();
-	glutSwapBuffers();
+    if (ex == GLUT_KEY_F1 || ex == 0) {
+        // Только левый вид, правая половина остаётся пустой
+        glViewport(0, 0, 800, 800);
+        glLoadIdentity();
+        scene();
+    } else {
+        // Левый вид — обычный
+        glViewport(0, 0, 800, 800);
+        glLoadIdentity();
+        scene();
+
+        // Правый вид — сверху
+        glViewport(800, 0, 800, 800);
+        glRotatef(90, 1, 0, 0);
+        scene();
+    }
+
+    glutSwapBuffers();
 }
+
 void Initialize() {
 	glClearColor(0.3, 0.3, 0.3, 1.0);
 	glMatrixMode(GL_PROJECTION);
