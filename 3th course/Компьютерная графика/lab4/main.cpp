@@ -1,717 +1,545 @@
-#include <GL/glut.h>
-#include <cmath>
+// g++ -o lighting_lab main.cpp -framework GLUT -framework OpenGL -Wno-deprecated-declarations
 
-const float OFFSET_SPEED = 0.03f;
-const int ANGLE_SPEED = 3;
-const float DIRECTION_SPEED = 0.05f;
+// почитать про direction источника и как включать выключать и менять источники
 
-int sceneAngleY = 0;
-int sceneAngleX = 0;
+/*
+  OpenGL/GLUT Лабораторная работа: Освещение
+  Задания 1-5 по освещению в OpenGL
+ 
+  Управление:
+    1-5 — переключение между заданиями
+    ESC/Q — выход
+ 
+  Задание 1:
+    A/D — Фоновый: уменьшить/увеличить
+    S/W — Рассеянный: уменьшить/увеличить
+    Z/X — Зеркальный: уменьшить/увеличить
+    M — переключение режима: фоновый/рассеянный/зеркальный/все/конус
+    [/] — угол конуса -/+
+    I/K — направление конуса по Y (вверх/вниз)
+    J/L — позиция источника по X
+    U/O — позиция источника по Y
+ 
+  Задание 2:
+    P — вкл/выкл позиционный источник
+    N — вкл/выкл направленный источник
+ 
+  Задание 3:
+    R — вращение источника вокруг оси Y
+ 
+  Задание 4:
+    R — вращение направленного источника
+ 
+  Задание 5:
+    Стрелки  — вращение сцены вокруг источника в начале координат
+ */
 
-int currentScene = 1;
+#include <GLUT/glut.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
 
-bool isScene1LightTypeSpot = false;
+/*  Глобальное состояние  */
 
-bool isScene2Light1Enabled = true;
-bool isScene2Light2Enabled = true;
+static int   task = 1;              /* Текущее задание (1..5) */
 
-float scene3LightOffsetX = 0.0f;
-float scene3LightOffsetY = 0.0f;
+/* Задание 1 — режимы и параметры источника */
+typedef enum { MODE_AMBIENT=0, MODE_DIFFUSE, MODE_SPECULAR, MODE_ALL, MODE_CONE } Task1Mode;
+static Task1Mode t1mode = MODE_AMBIENT;
+static float t1ambient  = 0.3f;
+static float t1diffuse  = 0.8f;
+static float t1specular = 1.0f;
+static float coneAngle  = 30.0f;
+static float coneDirX   = 0.0f;
+static float coneDirY   = -1.0f;
+static float coneDirZ   = -1.0f;
+static float lightX     = 0.0f;
+static float lightY     = 3.0f;
+static float lightZ     = 0.0f;
 
-bool isScene4Light1Enabled = true;
-bool isScene4Light2Enabled = true;
+/* Задание 2 */
+static int   t2posOn  = 1;
+static int   t2dirOn  = 1;
 
-int scene5LightAngleX = 0;
-int scene5LightAngleY = 0;
+/* Задание 3 */
+static float t3angle  = 0.0f;
+static int   t3rotate = 0;
 
-float scene6Light1DirectionX = 0.0f;
-float scene6Light1DirectionY = 0.0f;
-float scene6Light2DirectionX = 0.0f;
-float scene6Light2DirectionY = 0.0f;
-bool isScene6Light1Enabled = true;
-bool isScene6Light2Enabled = true;
+/* Задание 4 */
+static float t4angle  = 0.0f;
+static int   t4rotate = 1;
 
-const char *sceneTitles[] = {
-    "Сцена 1: Один источник",
-    "Сцена 2: Два направленных источника",
-    "Сцена 3: Один позиционный источник + блики",
-    "Сцена 4: Два позиционных источника",
-    "Сцена 5: Один движущийся позиционный источник",
-    "Сцена 6: Два позиционных источника + конусы"};
+/* Задание 5 */
+static float t5rotX   = 0.0f;
+static float t5rotY   = 0.0f;
 
-void glSwitch(GLenum cap)
-{
-    if (glIsEnabled(cap)) glDisable(cap); else glEnable(cap);
+/*  Вспомогательные функции  */
+
+static void setMaterial(float r, float g, float b, float shininess) {
+    GLfloat amb[]  = {r*0.3f, g*0.3f, b*0.3f, 1};
+    GLfloat dif[]  = {r, g, b, 1};
+    GLfloat spe[]  = {1,1,1,1};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, dif);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spe);
+    glMaterialf (GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 }
 
-void keyboardCallback(unsigned char key, int x, int y)
-{
-    switch (key)
-    {
-    case ' ':
-    {
-        switch (currentScene)
-        {
-            case 1:
-                isScene1LightTypeSpot = !isScene1LightTypeSpot;
-                break;
-        }
-        break;
-    }
-    case '1':
-    {
-        switch (currentScene)
-        {
-        case 2:
-            isScene2Light1Enabled = !isScene2Light1Enabled;
-            break;
-        case 4:
-            isScene4Light1Enabled = !isScene4Light1Enabled;
-            break;
-        case 6:
-            isScene6Light1Enabled = !isScene6Light1Enabled;
-            break;
-        }
-        break;
-    }
-    case '2':
-    {
-        switch (currentScene)
-        {
-        case 2:
-            isScene2Light2Enabled = !isScene2Light2Enabled;
-            break;
-        case 4:
-            isScene4Light2Enabled = !isScene4Light2Enabled;
-            break;
-        case 6:
-            isScene6Light2Enabled = !isScene6Light2Enabled;
-            break;
-        }
-        break;
-    }
-    case 'w':
-    {
-        switch (currentScene)
-        {
-        case 3:
-            scene3LightOffsetY += OFFSET_SPEED;
-            break;
-        case 5:
-            scene5LightAngleX = (scene5LightAngleX - ANGLE_SPEED) % 360;
-            break;
-        case 6:
-            scene6Light1DirectionY += DIRECTION_SPEED;
-            break;
-        }
-        break;
-    }
-    case 'W':
-    {
-        switch (currentScene)
-        {
-        case 6:
-            scene6Light2DirectionY += DIRECTION_SPEED;
-            break;
-        }
-        break;
-    }
-    case 'a':
-    {
-        switch (currentScene)
-        {
-        case 3:
-            scene3LightOffsetX -= OFFSET_SPEED;
-            break;
-        case 5:
-            scene5LightAngleY = (scene5LightAngleY - ANGLE_SPEED) % 360;
-            break;
-        case 6:
-            scene6Light1DirectionX -= DIRECTION_SPEED;
-            break;
-        }
-        break;
-    }
-    case 'A':
-    {
-        switch (currentScene)
-        {
-        case 6:
-            scene6Light2DirectionX -= DIRECTION_SPEED;
-            break;
-        }
-        break;
-    }
-    case 's':
-    {
-        switch (currentScene)
-        {
-        case 3:
-            scene3LightOffsetY -= OFFSET_SPEED;
-            break;
-        case 5:
-            scene5LightAngleX = (scene5LightAngleX + ANGLE_SPEED) % 360;
-            break;
-        case 6:
-            scene6Light1DirectionY -= DIRECTION_SPEED;
-            break;
-        }
-        break;
-    }
-    case 'S':
-    {
-        switch (currentScene)
-        {
-        case 6:
-            scene6Light2DirectionY -= DIRECTION_SPEED;
-            break;
-        }
-        break;
-    }
-    case 'd':
-    {
-        switch (currentScene)
-        {
-        case 3:
-            scene3LightOffsetX += OFFSET_SPEED;
-            break;
-        case 5:
-            scene5LightAngleY = (scene5LightAngleY + ANGLE_SPEED) % 360;
-            break;
-        case 6:
-            scene6Light1DirectionX += DIRECTION_SPEED;
-            break;
-        }
-        break;
-    }
-    case 'D':
-    {
-        switch (currentScene)
-        {
-        case 6:
-            scene6Light2DirectionX += DIRECTION_SPEED;
-            break;
-        }
-        break;
-    }
-    }
-    glutPostRedisplay();
-}
-
-void specialCallback(int key, int x, int y)
-{
-    switch (key)
-    {
-    case GLUT_KEY_UP:
-        sceneAngleX = (sceneAngleX - ANGLE_SPEED) % 360;
-        break;
-    case GLUT_KEY_DOWN:
-        sceneAngleX = (sceneAngleX + ANGLE_SPEED) % 360;
-        break;
-    case GLUT_KEY_LEFT:
-        sceneAngleY = (sceneAngleY - ANGLE_SPEED) % 360;
-        break;
-    case GLUT_KEY_RIGHT:
-        sceneAngleY = (sceneAngleY + ANGLE_SPEED) % 360;
-        break;
-    case GLUT_KEY_F1:
-        currentScene = 1;
-        break;
-    case GLUT_KEY_F2:
-        currentScene = 2;
-        break;
-    case GLUT_KEY_F3:
-        currentScene = 3;
-        break;
-    case GLUT_KEY_F4:
-        currentScene = 4;
-        break;
-    case GLUT_KEY_F5:
-        currentScene = 5;
-        break;
-    case GLUT_KEY_F6:
-        currentScene = 6;
-        break;
-    }
-
-    glutSetWindowTitle(sceneTitles[currentScene - 1]);
-    glutPostRedisplay();
-}
-
-void drawTori()
-{
-    float spacing = 0.3f;
-    float offset = 0.6f;
-
-    for (int x = 0; x < 5; x++)
-    {
-        for (int y = 0; y < 5; y++)
-        {
-            for (int z = 0; z < 5; z++)
-            {
-                glPushMatrix();
-                glTranslatef(x * spacing - offset, y * spacing - offset, z * spacing - offset);
-                glutSolidTorus(0.05f, 0.1f, 20, 20);
-                glPopMatrix();
-            }
-        }
-    }
-}
-
-void scene_1_one_source()
-{
-    glEnable(GL_LIGHT0);
-
-    GLfloat offsetZ = 1.2f;
-
-    glTranslatef(0, 0, offsetZ);
-
-    glDisable(GL_LIGHTING);
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glutSolidSphere(0.05f, 10, 10);
-    glEnable(GL_LIGHTING);
-
-    glTranslatef(0, 0, -offsetZ);
-
-    GLfloat position[] = {0, 0, offsetZ, isScene1LightTypeSpot ? 1.0f : 0.0f};
-    GLfloat direction[] = {0.0f, 0.0f, -1.0f};
-    GLfloat ambient[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat spotCutoff = isScene1LightTypeSpot ? 20.0f : 180.0f;
-    GLfloat spotExponent = isScene1LightTypeSpot ? 10.0f : 0.0f;
-
-    glLightfv(GL_LIGHT0, GL_POSITION, position);
-    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, direction);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
-    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, spotCutoff);
-    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, spotExponent);
-
-    GLfloat matAmbient[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    GLfloat matDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
-    GLfloat matSpecular[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    GLfloat matShininess = 0.0f;
-    GLfloat matEmission[] = {0.0f, 0.0f, 0.0f, 1.0f};
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT, matAmbient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, matSpecular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, &matShininess);
-    glMaterialfv(GL_FRONT, GL_EMISSION, matEmission);
-
-    drawTori();
-
-    glDisable(GL_LIGHT0);
-}
-
-void scene_2_two_directional_sources()
-{
-    if (isScene2Light1Enabled) glEnable(GL_LIGHT0);
-    if (isScene2Light2Enabled) glEnable(GL_LIGHT1);
-
-    GLfloat offsetZ = 1.2f;
-
-    GLfloat offsetX0 = -1.0f;
-
-    glTranslatef(offsetX0, 0, offsetZ);
-
-    glDisable(GL_LIGHTING);
-    glColor3f(0.3f, 0.3f, 1.0f);
-    glutSolidSphere(0.05f, 10, 10);
-    glEnable(GL_LIGHTING);
-
-    glTranslatef(-offsetX0, 0, -offsetZ);
-
-    GLfloat position0[] = {offsetX0, 0, offsetZ, 0};
-    GLfloat direction0[] = {0.0f, 0.0f, -1.0f};
-    GLfloat ambient0[] = {0.3f, 0.3f, 1.0f, 1.0f};
-    GLfloat diffuse0[] = {0.3f, 0.3f, 1.0f, 1.0f};
-    GLfloat specular0[] = {0.3f, 0.3f, 1.0f, 1.0f};
-    GLfloat spotCutoff0 = 180.0f;
-    GLfloat spotExponent0 = 0.0f;
-
-    glLightfv(GL_LIGHT0, GL_POSITION, position0);
-    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, direction0);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient0);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse0);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specular0);
-    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, spotCutoff0);
-    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, spotExponent0);
-
-    GLfloat offsetX1 = 1.0f;
-
-    glTranslatef(offsetX1, 0, offsetZ);
-
-    glDisable(GL_LIGHTING);
-    glColor3f(1.0f, 0.3f, 0.3f);
-    glutSolidSphere(0.05f, 10, 10);
-    glEnable(GL_LIGHTING);
-
-    glTranslatef(-offsetX1, 0, -offsetZ);
-
-    GLfloat position1[] = {offsetX1, 0, offsetZ, 0};
-    GLfloat direction1[] = {0.0f, 0.0f, -1.0f};
-    GLfloat ambient1[] = {1.0f, 0.3f, 0.3f, 1.0f};
-    GLfloat diffuse1[] = {1.0f, 0.3f, 0.3f, 1.0f};
-    GLfloat specular1[] = {1.0f, 0.3f, 0.3f, 1.0f};
-    GLfloat spotCutoff1 = 180.0f;
-    GLfloat spotExponent1 = 0.0f;
-
-    glLightfv(GL_LIGHT1, GL_POSITION, position1);
-    glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, direction1);
-    glLightfv(GL_LIGHT1, GL_AMBIENT, ambient1);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse1);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, specular1);
-    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, spotCutoff1);
-    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, spotExponent1);
-
-    GLfloat matAmbient[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    GLfloat matDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
-    GLfloat matSpecular[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    GLfloat matShininess = 0.0f;
-    GLfloat matEmission[] = {0.0f, 0.0f, 0.0f, 1.0f};
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT, matAmbient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, matSpecular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, &matShininess);
-    glMaterialfv(GL_FRONT, GL_EMISSION, matEmission);
-
-    drawTori();
-
-    glDisable(GL_LIGHT0);
-    glDisable(GL_LIGHT1);
-}
-
-void scene_3_one_spot_source_with_specular()
-{
-    glEnable(GL_LIGHT0);
-
-    GLfloat offsetZ = 1.2f;
-
-    glTranslatef(scene3LightOffsetX, scene3LightOffsetY, offsetZ);
-
-    glDisable(GL_LIGHTING);
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glutSolidSphere(0.05f, 10, 10);
-    glEnable(GL_LIGHTING);
-
-    glTranslatef(-scene3LightOffsetX, -scene3LightOffsetY, -offsetZ);
-
-    GLfloat position[] = {scene3LightOffsetX, scene3LightOffsetY, offsetZ, 1};
-    GLfloat direction[] = {0.0f, 0.0f, -1.0f};
-    GLfloat ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    GLfloat diffuse[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat spotCutoff = 180.0f;
-    GLfloat spotExponent = 0.0f;
-
-    glLightfv(GL_LIGHT0, GL_POSITION, position);
-    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, direction);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
-    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, spotCutoff);
-    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, spotExponent);
-
-    GLfloat matAmbient[] = {1.0f, 0.0f, 0.0f, 1.0f};
-    GLfloat matDiffuse[] = {1.0f, 0.0f, 0.0f, 1.0f};
-    GLfloat matSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat matShininess = 100.0f;
-    GLfloat matEmission[] = {0.0f, 0.0f, 0.0f, 1.0f};
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT, matAmbient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, matSpecular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, &matShininess);
-    glMaterialfv(GL_FRONT, GL_EMISSION, matEmission);
-
-    drawTori();
-
-    glDisable(GL_LIGHT0);
-}
-
-void scene_4_two_spot_sources()
-{
-    if (isScene4Light1Enabled) glEnable(GL_LIGHT0);
-    if (isScene4Light2Enabled) glEnable(GL_LIGHT1);
-
-    GLfloat offsetZ = 1.2f;
-
-    GLfloat offsetX0 = -0.3f;
-
-    glTranslatef(offsetX0, 0, offsetZ);
-
-    glDisable(GL_LIGHTING);
-    glColor3f(0.3f, 0.3f, 1.0f);
-    glutSolidSphere(0.05f, 10, 10);
-    glEnable(GL_LIGHTING);
-
-    glTranslatef(-offsetX0, 0, -offsetZ);
-
-    GLfloat position0[] = {offsetX0, 0, offsetZ, 1};
-    GLfloat direction0[] = {0.0f, 0.0f, -1.0f};
-    GLfloat ambient0[] = {0.2f, 0.2f, 0.5f, 1.0f};
-    GLfloat diffuse0[] = {0.2f, 0.2f, 0.5f, 1.0f};
-    GLfloat specular0[] = {1.0f, 0.0f, 0.0f, 1.0f};
-    GLfloat spotCutoff0 = 45.0f;
-    GLfloat spotExponent0 = 10.0f;
-
-    glLightfv(GL_LIGHT0, GL_POSITION, position0);
-    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, direction0);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient0);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse0);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specular0);
-    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, spotCutoff0);
-    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, spotExponent0);
-
-    GLfloat offsetX1 = 0.3f;
-
-    glTranslatef(offsetX1, 0, offsetZ);
-
-    glDisable(GL_LIGHTING);
-    glColor3f(1.0f, 0.3f, 0.3f);
-    glutSolidSphere(0.05f, 10, 10);
-    glEnable(GL_LIGHTING);
-
-    glTranslatef(-offsetX1, 0, -offsetZ);
-
-    GLfloat position1[] = {offsetX1, 0, offsetZ, 1};
-    GLfloat direction1[] = {0.0f, 0.0f, -1.0f};
-    GLfloat ambient1[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    GLfloat diffuse1[] = {0.5f, 0.2f, 0.2f, 1.0f};
-    GLfloat specular1[] = {0.0f, 0.0f, 1.0f, 1.0f};
-    GLfloat spotCutoff1 = 45.0f;
-    GLfloat spotExponent1 = 10.0f;
-
-    glLightfv(GL_LIGHT1, GL_POSITION, position1);
-    glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, direction1);
-    glLightfv(GL_LIGHT1, GL_AMBIENT, ambient1);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse1);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, specular1);
-    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, spotCutoff1);
-    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, spotExponent1);
-
-    GLfloat matAmbient[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat matDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat matSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat matShininess = 100.0f;
-    GLfloat matEmission[] = {0.0f, 0.0f, 0.0f, 1.0f};
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT, matAmbient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, matSpecular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, &matShininess);
-    glMaterialfv(GL_FRONT, GL_EMISSION, matEmission);
-
-    drawTori();
-
-    glDisable(GL_LIGHT0);
-    glDisable(GL_LIGHT1);
-}
-
-void scene_5_one_moving_spot_source()
-{
-    glEnable(GL_LIGHT0);
-
-    GLfloat offsetZ = 1.2f;
-
+/* Нарисовать набор разнородных объектов сцены */
+static void drawScene(void) {
+    /* Пол — тусклый серый */
+    setMaterial(0.4f, 0.4f, 0.4f, 5.0f);
     glPushMatrix();
-
-    glRotatef(scene5LightAngleX, 1, 0, 0);
-    glRotatef(scene5LightAngleY, 0, 1, 0);
-    glTranslatef(0, 0, offsetZ);
-
-    glDisable(GL_LIGHTING);
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glutSolidSphere(0.05f, 10, 10);
-    glEnable(GL_LIGHTING);
-
-    GLfloat position[] = {0, 0, 0, 1};
-    GLfloat direction[] = {0.0f, 0.0f, -1.0f};
-    GLfloat ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    GLfloat diffuse[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat spotCutoff = 180.0f;
-    GLfloat spotExponent = 0.0f;
-
-    glLightfv(GL_LIGHT0, GL_POSITION, position);
-    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, direction);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
-    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, spotCutoff);
-    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, spotExponent);
-
+    glTranslatef(0, -1.5f, 0);
+    glScalef(6, 0.1f, 6);
+    glutSolidCube(1.0);
     glPopMatrix();
 
-    GLfloat matAmbient[] = {0.3f, 1.0f, 0.3f, 1.0f};
-    GLfloat matDiffuse[] = {0.3f, 1.0f, 0.3f, 1.0f};
-    GLfloat matSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat matShininess = 100.0f;
-    GLfloat matEmission[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    /* Сфера — красная, зеркальная */
+    setMaterial(0.9f, 0.1f, 0.1f, 128.0f);
+    glPushMatrix();
+    glTranslatef(-2.0f, 0, 0);
+    glutSolidSphere(0.7, 32, 32);
+    glPopMatrix();
 
-    glMaterialfv(GL_FRONT, GL_AMBIENT, matAmbient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, matSpecular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, &matShininess);
-    glMaterialfv(GL_FRONT, GL_EMISSION, matEmission);
+    /* Тор — синий, матовый */
+    setMaterial(0.1f, 0.2f, 0.9f, 8.0f);
+    glPushMatrix();
+    glTranslatef(0, 0, 0);
+    glRotatef(90, 1, 0, 0);
+    glutSolidTorus(0.25, 0.6, 24, 24);
+    glPopMatrix();
 
-    drawTori();
+    /* Куб — зелёный, средний блеск */
+    setMaterial(0.1f, 0.8f, 0.2f, 32.0f);
+    glPushMatrix();
+    glTranslatef(2.0f, -0.5f, 0);
+    glRotatef(30, 0, 1, 0);
+    glutSolidCube(0.9);
+    glPopMatrix();
 
-    glDisable(GL_LIGHT0);
+    /* Конус — жёлтый, матовый */
+    setMaterial(0.9f, 0.8f, 0.1f, 4.0f);
+    glPushMatrix();
+    glTranslatef(0, -1.4f, -2.0f);
+    glRotatef(-90, 1, 0, 0);
+    glutSolidCone(0.5, 1.2, 24, 16);
+    glPopMatrix();
+
+    /* Чайник — белый, очень зеркальный */
+    setMaterial(0.95f, 0.95f, 0.95f, 200.0f);
+    glPushMatrix();
+    glTranslatef(0, -0.6f, 2.0f);
+    glScalef(0.6f, 0.6f, 0.6f);
+    glutSolidTeapot(1.0);
+    glPopMatrix();
 }
 
-void scene_6_two_spot_sources_with_cones()
-{
-    if (isScene6Light1Enabled) glEnable(GL_LIGHT0);
-    if (isScene6Light2Enabled) glEnable(GL_LIGHT1);
-
-    GLfloat offsetZ = 1.2f;
-
-    GLfloat offsetX0 = -0.3f;
-
-    glTranslatef(offsetX0, 0, offsetZ);
-
+/* Маленький жёлтый шарик — маркер позиции источника */
+static void drawLightMarker(float x, float y, float z) {
     glDisable(GL_LIGHTING);
-    glColor3f(0.3f, 0.3f, 1.0f);
-    glutSolidSphere(0.05f, 10, 10);
+    glColor3f(1, 1, 0);
+    glPushMatrix();
+    glTranslatef(x, y, z);
+    glutSolidSphere(0.08, 12, 12);
+    glPopMatrix();
     glEnable(GL_LIGHTING);
+}
 
-    glTranslatef(-offsetX0, 0, -offsetZ);
+static void setupProjection(void) {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    int w = glutGet(GLUT_WINDOW_WIDTH);
+    int h = glutGet(GLUT_WINDOW_HEIGHT);
+    gluPerspective(45.0, (double)w/h, 0.5, 50.0);
+    glMatrixMode(GL_MODELVIEW);
+}
 
-    GLfloat position0[] = {offsetX0, 0, offsetZ, 1};
-    GLfloat direction0[] = {scene6Light1DirectionX, scene6Light1DirectionY, -1.0f};
-    GLfloat ambient0[] = {0.2f, 0.2f, 0.5f, 1.0f};
-    GLfloat diffuse0[] = {0.2f, 0.2f, 0.5f, 1.0f};
-    GLfloat specular0[] = {1.0f, 0.0f, 0.0f, 1.0f};
-    GLfloat spotCutoff0 = 20.0f;
-    GLfloat spotExponent0 = 10.0f;
+static void setupCamera(void) {
+    glLoadIdentity();
+    gluLookAt(0, 3, 8,   0, 0, 0,   0, 1, 0);
+}
 
-    glLightfv(GL_LIGHT0, GL_POSITION, position0);
-    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, direction0);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient0);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse0);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specular0);
-    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, spotCutoff0);
-    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, spotExponent0);
-
-    GLfloat offsetX1 = 0.3f;
-
-    glTranslatef(offsetX1, 0, offsetZ);
-
+/* HUD — вывод строки текста на экран */
+static void drawText(const char *s, int x, int y) {
     glDisable(GL_LIGHTING);
-    glColor3f(1.0f, 0.3f, 0.3f);
-    glutSolidSphere(0.05f, 10, 10);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    int w = glutGet(GLUT_WINDOW_WIDTH);
+    int h = glutGet(GLUT_WINDOW_HEIGHT);
+    gluOrtho2D(0, w, 0, h);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glColor3f(1,1,0);
+    glRasterPos2i(x, h - y);
+    for (const char *c = s; *c; c++)
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, *c);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
     glEnable(GL_LIGHTING);
+}
 
-    glTranslatef(-offsetX1, 0, -offsetZ);
+/*  Отрисовка каждого задания  */
 
-    GLfloat position1[] = {offsetX1, 0, offsetZ, 1};
-    GLfloat direction1[] = {scene6Light2DirectionX, scene6Light2DirectionY, -1.0f};
-    GLfloat ambient1[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    GLfloat diffuse1[] = {0.5f, 0.2f, 0.2f, 1.0f};
-    GLfloat specular1[] = {0.0f, 0.0f, 1.0f, 1.0f};
-    GLfloat spotCutoff1 = 20.0f;
-    GLfloat spotExponent1 = 10.0f;
+static void renderTask1(void) {
+    setupCamera();
 
-    glLightfv(GL_LIGHT1, GL_POSITION, position1);
-    glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, direction1);
-    glLightfv(GL_LIGHT1, GL_AMBIENT, ambient1);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse1);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, specular1);
-    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, spotCutoff1);
-    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, spotExponent1);
+    /* Глобальный фоновый свет сцены */
+    GLfloat gAmb[] = {0.25f, 0.25f, 0.25f, 1.0f};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, gAmb);
 
-    GLfloat matAmbient[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat matDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat matSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat matShininess = 100.0f;
-    GLfloat matEmission[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    if (t1mode == MODE_AMBIENT) {
+        /* Только фоновый: выключаем GL_LIGHT0 */
+        glDisable(GL_LIGHT0);
+    } else {
+        /* Позиционный источник */
+        GLfloat pos[] = {lightX, lightY, lightZ, 1.0f};
+        glLightfv(GL_LIGHT0, GL_POSITION, pos);
 
-    glMaterialfv(GL_FRONT, GL_AMBIENT, matAmbient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, matSpecular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, &matShininess);
-    glMaterialfv(GL_FRONT, GL_EMISSION, matEmission);
+        GLfloat zero[] = {0,0,0,1};
 
-    drawTori();
+        if (t1mode == MODE_DIFFUSE) {
+            GLfloat amb[] = {0,0,0,1};
+            GLfloat dif[] = {t1diffuse,t1diffuse,t1diffuse,1};
+            glLightfv(GL_LIGHT0, GL_AMBIENT,  amb);
+            glLightfv(GL_LIGHT0, GL_DIFFUSE,  dif);
+            glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
+        } else if (t1mode == MODE_SPECULAR) {
+            GLfloat spe[] = {t1specular,t1specular,t1specular,1};
+            glLightfv(GL_LIGHT0, GL_AMBIENT,  zero);
+            glLightfv(GL_LIGHT0, GL_DIFFUSE,  zero);
+            glLightfv(GL_LIGHT0, GL_SPECULAR, spe);
+        } else { /* ВСЕ or КОНУС */
+            GLfloat amb[] = {t1ambient, t1ambient, t1ambient, 1};
+            GLfloat dif[] = {t1diffuse, t1diffuse, t1diffuse, 1};
+            GLfloat spe[] = {t1specular,t1specular,t1specular,1};
+            glLightfv(GL_LIGHT0, GL_AMBIENT,  amb);
+            glLightfv(GL_LIGHT0, GL_DIFFUSE,  dif);
+            glLightfv(GL_LIGHT0, GL_SPECULAR, spe);
+        }
 
+        if (t1mode == MODE_CONE) {
+            GLfloat dir[] = {coneDirX, coneDirY, coneDirZ};
+            glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, dir);
+            glLightf (GL_LIGHT0, GL_SPOT_CUTOFF, coneAngle);
+            glLightf (GL_LIGHT0, GL_SPOT_EXPONENT, 5.0f);
+        } else {
+            glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180.0f); /* без конуса */
+        }
+        glEnable(GL_LIGHT0);
+        drawLightMarker(lightX, lightY, lightZ);
+    }
+
+    drawScene();
+
+    /* HUD */
+    char buf[256];
+    const char *mnames[] = {"ТОЛЬКО ФОНОВЫЙ","ТОЛЬКО РАССЕЯННЫЙ","ТОЛЬКО ЗЕРКАЛЬНЫЙ","ВСЕ КОМПОНЕНТЫ","ВСЕ + КОНУС"};
+    snprintf(buf, sizeof buf, "Задание 1 | Режим [M]: %s", mnames[t1mode]);
+    drawText(buf, 8, 20);
+    if (t1mode == MODE_CONE)
+        snprintf(buf,sizeof buf,"Угол конуса: %.0f  Направление:(%.2f,%.2f,%.2f)  Позиция источника:(%.1f,%.1f,%.1f)",
+                 coneAngle,coneDirX,coneDirY,coneDirZ,lightX,lightY,lightZ);
+    else
+        snprintf(buf,sizeof buf,"Фоновый=%.2f  Рассеянный=%.2f  Зеркальный=%.2f  Позиция:(%.1f,%.1f,%.1f)",
+                 t1ambient,t1diffuse,t1specular,lightX,lightY,lightZ);
+    drawText(buf, 8, 36);
+    drawText("Клавиши: M-режим  A/D-фон  S/W-рассеянный  Z/X-зеркальный  [/]-угол  IJKL/UO-направление/позиция", 8, 52);
+}
+
+static void renderTask2(void) {
+    setupCamera();
+
+    GLfloat gAmb[] = {0.1f,0.1f,0.1f,1.0f};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, gAmb);
+
+    /* Позиционный источник — LIGHT0 */
+    if (t2posOn) {
+        GLfloat pos[] = {2.0f, 3.0f, 2.0f, 1.0f};
+        GLfloat amb[] = {0.1f, 0.1f, 0.1f, 1};
+        GLfloat dif[] = {1.0f, 0.6f, 0.1f, 1};  /* тёплый */
+        GLfloat spe[] = {1.0f, 1.0f, 1.0f, 1};
+        glLightfv(GL_LIGHT0, GL_POSITION, pos);
+        glLightfv(GL_LIGHT0, GL_AMBIENT,  amb);
+        glLightfv(GL_LIGHT0, GL_DIFFUSE,  dif);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, spe);
+        glLightf (GL_LIGHT0, GL_SPOT_CUTOFF, 180.0f);
+        glEnable(GL_LIGHT0);
+        drawLightMarker(2.0f, 3.0f, 2.0f);
+    } else glDisable(GL_LIGHT0);
+
+    /* Направленный источник — LIGHT1 */
+    if (t2dirOn) {
+        GLfloat dir[] = {-1.0f, -1.0f, -0.5f, 0.0f}; /* w=0 → направленный */
+        GLfloat amb[] = {0.05f, 0.05f, 0.15f, 1};
+        GLfloat dif[] = {0.3f,  0.3f,  1.0f,  1};  /* холодный синий */
+        GLfloat spe[] = {0.8f,  0.8f,  1.0f,  1};
+        glLightfv(GL_LIGHT1, GL_POSITION, dir);
+        glLightfv(GL_LIGHT1, GL_AMBIENT,  amb);
+        glLightfv(GL_LIGHT1, GL_DIFFUSE,  dif);
+        glLightfv(GL_LIGHT1, GL_SPECULAR, spe);
+        glEnable(GL_LIGHT1);
+    } else glDisable(GL_LIGHT1);
+
+    drawScene();
+
+    char buf[128];
+    snprintf(buf,sizeof buf,"Задание 2 | Позиционный[P]:%s  Направленный[N]:%s",
+             t2posOn?"ВКЛ":"ВЫКЛ", t2dirOn?"ВКЛ":"ВЫКЛ");
+    drawText(buf, 8, 20);
+    drawText("P - вкл/выкл позиционный (тёплый)   N - вкл/выкл направленный (холодный)", 8, 36);
+}
+
+static void renderTask3(void) {
+    setupCamera();
+
+    GLfloat gAmb[] = {0.15f,0.15f,0.15f,1.0f};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, gAmb);
+
+    /* Вычислить позицию вращающегося источника */
+    float rad = (float)(t3angle * M_PI / 180.0);
+    float lx  = 3.0f * sinf(rad);
+    float ly  = 2.0f;
+    float lz  = 3.0f * cosf(rad);
+
+    GLfloat pos[] = {lx, ly, lz, 1.0f};
+    GLfloat amb[] = {0.1f,0.1f,0.1f,1};
+    GLfloat dif[] = {1.0f,1.0f,1.0f,1};
+    GLfloat spe[] = {1.0f,1.0f,1.0f,1};
+    // Конус направлен вдоль −Z мирового пространства
+    GLfloat spotDir[] = {0.0f, 0.0f, -1.0f};
+
+    glLightfv(GL_LIGHT0, GL_POSITION, pos);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, amb);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, dif);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, spe);
+    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spotDir);
+    glLightf (GL_LIGHT0, GL_SPOT_CUTOFF, 35.0f);
+    glLightf (GL_LIGHT0, GL_SPOT_EXPONENT, 6.0f);
+    glEnable(GL_LIGHT0);
+
+    drawLightMarker(lx, ly, lz);
+    drawScene();
+
+    char buf[128];
+    snprintf(buf,sizeof buf,"Задание 3 | Вращающийся прожектор (конус вдоль -Z)  Угол=%.1f  [R] вкл/выкл вращение", t3angle);
+    drawText(buf, 8, 20);
+    drawText("R - запустить/остановить вращение", 8, 36);
+}
+
+static void renderTask4(void) {
+    setupCamera();
+
+    GLfloat gAmb[] = {0.1f,0.1f,0.1f,1.0f};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, gAmb);
+
+    /* Направленный источник «обходит» сцену по кругу */
+    float rad = (float)(t4angle * M_PI / 180.0);
+    /* Направление от источника к центру (0,0,0) */
+    float dx = -sinf(rad);
+    float dy = -0.5f;       /* чуть сверху вниз */
+    float dz = -cosf(rad);
+    /* w=0 → направленный (бесконечно далёкий) */
+    GLfloat dir[] = {dx, dy, dz, 0.0f};
+
+    GLfloat amb[] = {0.1f, 0.05f,0.0f, 1};
+    GLfloat dif[] = {1.0f, 0.85f,0.5f, 1};  /* тёплый солнечный */
+    GLfloat spe[] = {1.0f, 1.0f, 1.0f, 1};
+    glLightfv(GL_LIGHT0, GL_POSITION, dir);
+    glLightfv(GL_LIGHT0, GL_AMBIENT,  amb);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE,  dif);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, spe);
+    glLightf (GL_LIGHT0, GL_SPOT_CUTOFF, 180.0f);
+    glEnable(GL_LIGHT0);
+
+    /* Нарисуем маркер «далёкого» источника */
+    float mx = 5.0f * sinf(rad);
+    float my = 3.0f;
+    float mz = 5.0f * cosf(rad);
+    drawLightMarker(mx, my, mz);
+
+    drawScene();
+
+    char buf[128];
+    snprintf(buf,sizeof buf,"Задание 4 | Направленный источник вращается вокруг сцены  Угол=%.1f", t4angle);
+    drawText(buf, 8, 20);
+    drawText("Автоматическое вращение направленного света, всегда направлен на центр", 8, 36);
+}
+
+static void renderTask5(void) {
+    glLoadIdentity();
+    gluLookAt(0, 3, 8,   0, 0, 0,   0, 1, 0);
+
+    GLfloat gAmb[] = {0.15f,0.15f,0.15f,1.0f};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, gAmb);
+
+    /* Источник в начале мировых координат — задаём до вращения сцены */
+    GLfloat pos[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    GLfloat amb[] = {0.15f,0.15f,0.15f,1};
+    GLfloat dif[] = {1.0f, 1.0f, 1.0f, 1};
+    GLfloat spe[] = {1.0f, 1.0f, 1.0f, 1};
+    glLightfv(GL_LIGHT0, GL_POSITION, pos);
+    glLightfv(GL_LIGHT0, GL_AMBIENT,  amb);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE,  dif);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, spe);
+    glLightf (GL_LIGHT0, GL_SPOT_CUTOFF, 180.0f);
+    glEnable(GL_LIGHT0);
+
+    drawLightMarker(0, 0, 0);  /* маркер источника */
+
+    /* Вращаем сцену вокруг источника */
+    glRotatef(t5rotX, 1, 0, 0);
+    glRotatef(t5rotY, 0, 1, 0);
+
+    drawScene();
+
+    char buf[128];
+    snprintf(buf,sizeof buf,"Задание 5 | Источник в центре координат, сцена вращается  ВращX=%.1f  ВращY=%.1f", t5rotX, t5rotY);
+    drawText(buf, 8, 20);
+    drawText("Стрелки - вращать сцену вокруг неподвижного источника света", 8, 36);
+}
+
+/*  Колбэки GLUT  */
+
+static void display(void) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    /* Выключить все источники по умолчанию перед каждым кадром */
     glDisable(GL_LIGHT0);
     glDisable(GL_LIGHT1);
-}
 
-void (*scenes[])() = {
-    scene_1_one_source,
-    scene_2_two_directional_sources,
-    scene_3_one_spot_source_with_specular,
-    scene_4_two_spot_sources,
-    scene_5_one_moving_spot_source,
-    scene_6_two_spot_sources_with_cones};
-
-void scene()
-{
-    scenes[currentScene - 1]();
-}
-
-void displayCallback()
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, 1000, 1000);
+    setupProjection();
+    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    glRotatef(sceneAngleY, 0, 1, 0);
-    glRotatef(sceneAngleX, 1, 0, 0);
+    switch (task) {
+        case 1: renderTask1(); break;
+        case 2: renderTask2(); break;
+        case 3: renderTask3(); break;
+        case 4: renderTask4(); break;
+        case 5: renderTask5(); break;
+    }
 
-    scene();
+    /* Заголовок задания */
+    char title[64];
+    snprintf(title, sizeof title, "Задание %d/5  [1-5 переключение, ESC выход]", task);
+    drawText(title, 8, glutGet(GLUT_WINDOW_HEIGHT) - 10);
 
     glutSwapBuffers();
 }
 
-void setupOpenGL()
-{
-    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-    glEnable(GL_DEPTH_TEST);
+static void reshape(int w, int h) {
+    if (h == 0) h = 1;
+    glViewport(0, 0, w, h);
+}
 
-    glEnable(GL_AUTO_NORMAL);
+static void timer(int v) {
+    (void)v;
+    if (task == 3 && t3rotate) t3angle += 0.8f;
+    if (task == 4 && t4rotate) t4angle += 0.5f;
+    glutPostRedisplay();
+    glutTimerFunc(16, timer, 0);
+}
+
+static void keyboard(unsigned char key, int x, int y) {
+    (void)x; (void)y;
+    switch (key) {
+    /* Переключение заданий */
+    case '1': task = 1; break;
+    case '2': task = 2; break;
+    case '3': task = 3; break;
+    case '4': task = 4; break;
+    case '5': task = 5; break;
+
+    case 27: case 'q': case 'Q': exit(0); break;
+
+    /*  Задание 1  */
+    case 'm': case 'M':
+        t1mode = (Task1Mode)((t1mode + 1) % 5); break;
+    case 'a': t1ambient  -= 0.05f; if (t1ambient  < 0) t1ambient  = 0; break;
+    case 'd': t1ambient  += 0.05f; if (t1ambient  > 1) t1ambient  = 1; break;
+    case 's': t1diffuse  -= 0.05f; if (t1diffuse  < 0) t1diffuse  = 0; break;
+    case 'w': t1diffuse  += 0.05f; if (t1diffuse  > 1) t1diffuse  = 1; break;
+    case 'z': t1specular -= 0.05f; if (t1specular < 0) t1specular = 0; break;
+    case 'x': t1specular += 0.05f; if (t1specular > 1) t1specular = 1; break;
+    case '[': coneAngle -= 2.0f; if (coneAngle <  5) coneAngle =  5; break;
+    case ']': coneAngle += 2.0f; if (coneAngle > 90) coneAngle = 90; break;
+    case 'i': coneDirY += 0.1f; break;
+    case 'k': coneDirY -= 0.1f; break;
+    case 'j': lightX -= 0.2f; break;
+    case 'l': lightX += 0.2f; break;
+    case 'u': lightY += 0.2f; break;
+    case 'o': lightY -= 0.2f; break;
+
+    /*  Задание 2  */
+    case 'p': case 'P': t2posOn = !t2posOn; break;
+    case 'n': case 'N': t2dirOn = !t2dirOn; break;
+
+    /* Задания 3, 4 */
+    case 'r': case 'R':
+        if (task == 3) t3rotate = !t3rotate;
+        break;
+    }
+    glutPostRedisplay();
+}
+
+static void specialKey(int key, int x, int y) {
+    (void)x; (void)y;
+    if (task == 5) {
+        switch (key) {
+        case GLUT_KEY_UP:    t5rotX -= 3.0f; break;
+        case GLUT_KEY_DOWN:  t5rotX += 3.0f; break;
+        case GLUT_KEY_LEFT:  t5rotY -= 3.0f; break;
+        case GLUT_KEY_RIGHT: t5rotY += 3.0f; break;
+        }
+        glutPostRedisplay();
+    }
+}
+
+/* Инициализация */
+
+static void init(void) {
+    glClearColor(0.05f, 0.05f, 0.08f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
+    glShadeModel(GL_SMOOTH);
+
+    /* Нормали автоматически нормализуются */
     glEnable(GL_NORMALIZE);
 
-    GLfloat black[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, black);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glFrustum(-0.5f, 0.5f, -0.5f, 0.5f, 1, 10);
-    glTranslatef(0.0f, 0.0f, -4.0f);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    /* Параметры LIGHT1 (для задания 2) */
+    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 180.0f);
 }
 
-void setupGLUT(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
-    glutInitWindowSize(1000, 1000);
-    glutCreateWindow(sceneTitles[currentScene - 1]);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitWindowSize(900, 600);
+    glutCreateWindow("Лабораторная работа: Освещение в OpenGL (Задания 1-5)");
 
-    glutDisplayFunc(displayCallback);
-    glutKeyboardFunc(keyboardCallback);
-    glutSpecialFunc(specialCallback);
-}
+    init();
 
-void initialize(int argc, char **argv)
-{
-    setupGLUT(argc, argv);
-    setupOpenGL();
-}
+    glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    glutKeyboardFunc(keyboard);
+    glutSpecialFunc(specialKey);
+    glutTimerFunc(16, timer, 0);
 
-int main(int argc, char **argv)
-{
-    initialize(argc, argv);
+    printf("\n=== Лабораторная работа: Освещение в OpenGL ===\n");
+    printf("Нажмите 1-5 для переключения заданий, ESC для выхода\n\n");
+    printf("Задание 1: M - переключение режимов (фоновый/рассеянный/зеркальный/все/конус)\n");
+    printf("        A/D - фоновый, S/W - рассеянный, Z/X - зеркальный\n");
+    printf("        [ / ] - угол конуса, I/K - направление конуса по Y\n");
+    printf("        J/L - позиция источника X, U/O - позиция источника Y\n");
+    printf("Задание 2: P - вкл/выкл позиционный, N - вкл/выкл направленный\n");
+    printf("Задание 3: R - вкл/выкл вращение прожектора вокруг Y\n");
+    printf("Задание 4: Направленный источник автоматически вращается вокруг сцены\n");
+    printf("Задание 5: Стрелки - вращение сцены вокруг неподвижного источника в центре\n\n");
+
     glutMainLoop();
     return 0;
 }

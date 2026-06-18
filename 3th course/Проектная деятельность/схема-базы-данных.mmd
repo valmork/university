@@ -1,0 +1,25 @@
+erDiagram
+    Матч {
+        int id PK
+        timestamp startTime
+        int scoreTeamA
+        int scoreTeamB
+        string videoUri
+    }
+    
+    Событие {
+        int id PK
+        int matchId FK
+        string type
+        int minute
+        float confidence
+    }
+    
+    Настройки_калибровки {
+        int id PK
+        string goalLeftCoords
+        string goalRightCoords
+        string pitchSize
+    }
+    
+    Матч ||--o{ Событие : ""

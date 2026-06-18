@@ -121,7 +121,7 @@
         <mxCell id="jw3AL1vD7-vfjtFwdkXW-41" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFEDEE;" value="Обновление ресурсов roadmap" vertex="1">
           <mxGeometry height="60" width="120" x="760" y="480" as="geometry" />
         </mxCell>
-        <mxCell id="jw3AL1vD7-vfjtFwdkXW-42" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFEDEE;" value="Техническая поддержка и обратная связь" vertex="1">
+        <mxCell id="jw3AL1vD7-vfjtFwdkXW-42" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFEDEE;" value="Техническая поддержка и исправление багов" vertex="1">
           <mxGeometry height="60" width="120" x="760" y="560" as="geometry" />
         </mxCell>
         <mxCell id="jw3AL1vD7-vfjtFwdkXW-43" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#DFEDEE,#1D293B);strokeColor=#6c8ebf;" value="Публикация в сторах" vertex="1">
